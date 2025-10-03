@@ -14,6 +14,7 @@ import com.davidniederweis.mealier.ui.screens.auth.LoginScreen
 import com.davidniederweis.mealier.ui.screens.home.HomeScreen
 import com.davidniederweis.mealier.ui.screens.profile.ProfileScreen
 import com.davidniederweis.mealier.ui.screens.recipe.AddRecipeScreen
+import com.davidniederweis.mealier.ui.screens.recipe.EditRecipeScreen
 import com.davidniederweis.mealier.ui.screens.recipe.RecipeDetailScreen
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.profile.ProfileState
@@ -108,6 +109,34 @@ fun NavGraph(
                     // Navigate to the newly created recipe detail
                     navController.navigate(Screen.RecipeDetail.createRoute(slug)) {
                         popUpTo(Screen.AddRecipe.route) { inclusive = true }
+                    }
+                },
+                navController = navController,
+                isAdmin = isAdmin
+            )
+        }
+
+        // Edit Recipe Screen
+        composable(
+            route = Screen.EditRecipe.route,
+            arguments = listOf(
+                navArgument("slug") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val slug = backStackEntry.arguments?.getString("slug") ?: return@composable
+            EditRecipeScreen(
+                slug = slug,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onRecipeUpdated = { updatedSlug ->
+                    // Navigate to the updated recipe detail, clearing the edit screen and old detail screen
+                    navController.navigate(Screen.RecipeDetail.createRoute(updatedSlug)) {
+                        // Pop everything up to and including the original recipe detail screen
+                        popUpTo(Screen.RecipeDetail.createRoute(slug)) { 
+                            inclusive = true 
+                        }
+                        // This removes both the old detail screen and the edit screen from the stack
                     }
                 },
                 navController = navController,

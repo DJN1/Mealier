@@ -9,14 +9,14 @@ data class UnitListResponse(
     val items: List<RecipeUnit>,
 
     @SerializedName("total")
-    val total: Int,
+    val total: Int? = null,
 
     @SerializedName("page")
-    val page: Int,
+    val page: Int? = null,
 
     @SerializedName("perPage")
-    val perPage: Int,
+    val perPage: Int? = null,
 
     @SerializedName("totalPages")
-    val totalPages: Int
+    val totalPages: Int? = null
 )

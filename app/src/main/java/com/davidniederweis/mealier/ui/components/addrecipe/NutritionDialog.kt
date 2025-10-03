@@ -7,11 +7,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.davidniederweis.mealier.ui.viewmodel.recipe.AddRecipeViewModel
+import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeFormViewModel
 
 @Composable
 fun NutritionDialog(
-    viewModel: AddRecipeViewModel,
+    viewModel: RecipeFormViewModel,
     onDismiss: () -> Unit
 ) {
     val nutrition by viewModel.nutrition.collectAsState()
@@ -65,33 +65,6 @@ fun NutritionDialog(
                     onValueChange = { localNutrition = localNutrition.copy(carbohydrateContent = it) },
                     label = { Text("Carbohydrates (g)") },
                     placeholder = { Text("30") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                OutlinedTextField(
-                    value = localNutrition.fiberContent,
-                    onValueChange = { localNutrition = localNutrition.copy(fiberContent = it) },
-                    label = { Text("Fiber (g)") },
-                    placeholder = { Text("5") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                OutlinedTextField(
-                    value = localNutrition.sugarContent,
-                    onValueChange = { localNutrition = localNutrition.copy(sugarContent = it) },
-                    label = { Text("Sugar (g)") },
-                    placeholder = { Text("8") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                OutlinedTextField(
-                    value = localNutrition.sodiumContent,
-                    onValueChange = { localNutrition = localNutrition.copy(sodiumContent = it) },
-                    label = { Text("Sodium (mg)") },
-                    placeholder = { Text("500") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )

@@ -13,6 +13,7 @@ import com.davidniederweis.mealier.ui.viewmodel.preferences.BiometricsViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.ThemeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.profile.ProfileViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.AddRecipeViewModel
+import com.davidniederweis.mealier.ui.viewmodel.recipe.EditRecipeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeViewModel
 
 class ViewModelFactory(
@@ -37,6 +38,10 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(AddRecipeViewModel::class.java) -> {
                 AddRecipeViewModel(recipeRepository) as T
+            }
+
+            modelClass.isAssignableFrom(EditRecipeViewModel::class.java) -> {
+                EditRecipeViewModel(recipeRepository) as T
             }
 
             modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {

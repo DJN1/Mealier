@@ -16,6 +16,7 @@ import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
 import com.davidniederweis.mealier.ui.components.general.ErrorMessage
 import com.davidniederweis.mealier.ui.components.general.LoadingBox
 import com.davidniederweis.mealier.ui.components.recipe.RecipeDetailContent
+import com.davidniederweis.mealier.ui.navigation.Screen
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeDetailState
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeViewModel
@@ -106,6 +107,21 @@ fun RecipeDetailScreen(
                 navController = navController,
                 isAdmin = isAdmin
             )
+        },
+        floatingActionButton = {
+            // Show edit FAB only if admin and recipe is loaded
+            if (isAdmin && recipeDetailState is RecipeDetailState.Success) {
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate(Screen.EditRecipe.createRoute(slug))
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Recipe"
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         when (val state = recipeDetailState) {

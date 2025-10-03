@@ -22,7 +22,7 @@ import java.io.File
 
 class AddRecipeViewModel(
     private val repository: RecipeRepository
-) : ViewModel() {
+) : ViewModel(), RecipeFormViewModel {
 
     // State for the creation process
     private val _creationState = MutableStateFlow<RecipeCreationState>(RecipeCreationState.Idle)
@@ -30,46 +30,46 @@ class AddRecipeViewModel(
 
     // Available units and foods
     private val _units = MutableStateFlow<List<RecipeUnit>>(emptyList())
-    val units: StateFlow<List<RecipeUnit>> = _units.asStateFlow()
+    override val units: StateFlow<List<RecipeUnit>> = _units.asStateFlow()
 
     private val _foods = MutableStateFlow<List<Food>>(emptyList())
-    val foods: StateFlow<List<Food>> = _foods.asStateFlow()
+    override val foods: StateFlow<List<Food>> = _foods.asStateFlow()
 
     // Manual recipe form state
     private val _recipeName = MutableStateFlow("")
-    val recipeName: StateFlow<String> = _recipeName.asStateFlow()
+    override val recipeName: StateFlow<String> = _recipeName.asStateFlow()
 
     private val _recipeDescription = MutableStateFlow("")
-    val recipeDescription: StateFlow<String> = _recipeDescription.asStateFlow()
+    override val recipeDescription: StateFlow<String> = _recipeDescription.asStateFlow()
 
     private val _ingredients = MutableStateFlow(listOf(IngredientInput()))
-    val ingredients: StateFlow<List<IngredientInput>> = _ingredients.asStateFlow()
+    override val ingredients: StateFlow<List<IngredientInput>> = _ingredients.asStateFlow()
 
     private val _instructions = MutableStateFlow(listOf(InstructionInput()))
-    val instructions: StateFlow<List<InstructionInput>> = _instructions.asStateFlow()
+    override val instructions: StateFlow<List<InstructionInput>> = _instructions.asStateFlow()
 
     private val _servings = MutableStateFlow("")
-    val servings: StateFlow<String> = _servings.asStateFlow()
+    override val servings: StateFlow<String> = _servings.asStateFlow()
 
     private val _prepTime = MutableStateFlow("")
-    val prepTime: StateFlow<String> = _prepTime.asStateFlow()
+    override val prepTime: StateFlow<String> = _prepTime.asStateFlow()
 
     private val _cookTime = MutableStateFlow("")
-    val cookTime: StateFlow<String> = _cookTime.asStateFlow()
+    override val cookTime: StateFlow<String> = _cookTime.asStateFlow()
 
     private val _totalTime = MutableStateFlow("")
-    val totalTime: StateFlow<String> = _totalTime.asStateFlow()
+    override val totalTime: StateFlow<String> = _totalTime.asStateFlow()
 
     // Nutrition info
     private val _nutrition = MutableStateFlow(NutritionInput())
-    val nutrition: StateFlow<NutritionInput> = _nutrition.asStateFlow()
+    override val nutrition: StateFlow<NutritionInput> = _nutrition.asStateFlow()
 
     // Image handling
     private val _imageFile = MutableStateFlow<File?>(null)
-    val imageFile: StateFlow<File?> = _imageFile.asStateFlow()
+    override val imageFile: StateFlow<File?> = _imageFile.asStateFlow()
 
     private val _imageUrl = MutableStateFlow("")
-    val imageUrl: StateFlow<String> = _imageUrl.asStateFlow()
+    override val imageUrl: StateFlow<String> = _imageUrl.asStateFlow()
 
     // URL import
     private val _recipeUrl = MutableStateFlow("")
@@ -98,77 +98,77 @@ class AddRecipeViewModel(
     }
 
     // Manual recipe form updates
-    fun updateRecipeName(name: String) {
+    override fun updateRecipeName(name: String) {
         _recipeName.value = name
     }
 
-    fun updateRecipeDescription(description: String) {
+    override fun updateRecipeDescription(description: String) {
         _recipeDescription.value = description
     }
 
-    fun updateServings(servings: String) {
+    override fun updateServings(servings: String) {
         _servings.value = servings
     }
 
-    fun updatePrepTime(time: String) {
+    override fun updatePrepTime(time: String) {
         _prepTime.value = time
     }
 
-    fun updateCookTime(time: String) {
+    override fun updateCookTime(time: String) {
         _cookTime.value = time
     }
 
-    fun updateTotalTime(time: String) {
+    override fun updateTotalTime(time: String) {
         _totalTime.value = time
     }
 
-    fun updateNutrition(nutrition: NutritionInput) {
+    override fun updateNutrition(nutrition: NutritionInput) {
         _nutrition.value = nutrition
     }
 
     // Ingredient management
-    fun addIngredient() {
+    override fun addIngredient() {
         _ingredients.value = _ingredients.value + IngredientInput()
     }
 
-    fun removeIngredient(index: Int) {
+    override fun removeIngredient(index: Int) {
         if (_ingredients.value.size > 1) {
             _ingredients.value = _ingredients.value.filterIndexed { i, _ -> i != index }
         }
     }
 
-    fun updateIngredient(index: Int, ingredient: IngredientInput) {
+    override fun updateIngredient(index: Int, ingredient: IngredientInput) {
         _ingredients.value = _ingredients.value.mapIndexed { i, ing ->
             if (i == index) ingredient else ing
         }
     }
 
     // Instruction management
-    fun addInstruction() {
+    override fun addInstruction() {
         _instructions.value = _instructions.value + InstructionInput()
     }
 
-    fun removeInstruction(index: Int) {
+    override fun removeInstruction(index: Int) {
         if (_instructions.value.size > 1) {
             _instructions.value = _instructions.value.filterIndexed { i, _ -> i != index }
         }
     }
 
-    fun updateInstruction(index: Int, instruction: InstructionInput) {
+    override fun updateInstruction(index: Int, instruction: InstructionInput) {
         _instructions.value = _instructions.value.mapIndexed { i, inst ->
             if (i == index) instruction else inst
         }
     }
 
     // Image handling
-    fun setImageFile(file: File?) {
+    override fun setImageFile(file: File?) {
         _imageFile.value = file
         if (file != null) {
             _imageUrl.value = "" // Clear URL if file is set
         }
     }
 
-    fun setImageUrl(url: String) {
+    override fun setImageUrl(url: String) {
         _imageUrl.value = url
         if (url.isNotBlank()) {
             _imageFile.value = null // Clear file if URL is set
@@ -176,7 +176,7 @@ class AddRecipeViewModel(
     }
 
     // Create new unit
-    fun createUnit(name: String, onSuccess: (RecipeUnit) -> Unit) {
+    override fun createUnit(name: String, onSuccess: (RecipeUnit) -> Unit) {
         viewModelScope.launch {
             try {
                 Logger.d("AddRecipeViewModel", "Creating new unit: $name")
@@ -194,7 +194,7 @@ class AddRecipeViewModel(
     }
 
     // Create new food
-    fun createFood(name: String, onSuccess: (Food) -> Unit) {
+    override fun createFood(name: String, onSuccess: (Food) -> Unit) {
         viewModelScope.launch {
             try {
                 Logger.d("AddRecipeViewModel", "Creating new food: $name")
@@ -229,8 +229,8 @@ class AddRecipeViewModel(
                     .map { ingredient ->
                         CreateIngredientRequest(
                             quantity = ingredient.quantity.toDoubleOrNull(),
-                            unit = ingredient.unit?.let { CreateIngredientUnitRequest(it.id!!) },
-                            food = CreateIngredientFoodRequest(ingredient.food!!.id!!),
+                            unit = ingredient.unit?.let { CreateIngredientUnitRequest(it.id!!, it.name) },
+                            food = CreateIngredientFoodRequest(ingredient.food!!.id!!, ingredient.food.name),
                             note = ingredient.note.takeIf { it.isNotBlank() }
                         )
                     }
@@ -252,10 +252,7 @@ class AddRecipeViewModel(
                         calories = _nutrition.value.calories.takeIf { it.isNotBlank() },
                         fatContent = _nutrition.value.fatContent.takeIf { it.isNotBlank() },
                         proteinContent = _nutrition.value.proteinContent.takeIf { it.isNotBlank() },
-                        carbohydrateContent = _nutrition.value.carbohydrateContent.takeIf { it.isNotBlank() },
-                        fiberContent = _nutrition.value.fiberContent.takeIf { it.isNotBlank() },
-                        sugarContent = _nutrition.value.sugarContent.takeIf { it.isNotBlank() },
-                        sodiumContent = _nutrition.value.sodiumContent.takeIf { it.isNotBlank() }
+                        carbohydrateContent = _nutrition.value.carbohydrateContent.takeIf { it.isNotBlank() }
                     )
                 } else null
 
@@ -369,18 +366,12 @@ data class NutritionInput(
     val calories: String = "",
     val fatContent: String = "",
     val proteinContent: String = "",
-    val carbohydrateContent: String = "",
-    val fiberContent: String = "",
-    val sugarContent: String = "",
-    val sodiumContent: String = ""
+    val carbohydrateContent: String = ""
 ) {
     fun hasAnyValue(): Boolean {
         return calories.isNotBlank() ||
                 fatContent.isNotBlank() ||
                 proteinContent.isNotBlank() ||
-                carbohydrateContent.isNotBlank() ||
-                fiberContent.isNotBlank() ||
-                sugarContent.isNotBlank() ||
-                sodiumContent.isNotBlank()
+                carbohydrateContent.isNotBlank()
     }
 }

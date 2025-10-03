@@ -8,6 +8,7 @@ import com.davidniederweis.mealier.data.model.unit.CreateUnitRequest
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
 import com.davidniederweis.mealier.data.model.unit.UnitListResponse
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.http.*
 
@@ -30,12 +31,27 @@ interface RecipeApi {
     @POST("api/recipes/create/url")
     suspend fun createRecipeFromUrl(@Body request: CreateRecipeFromUrlRequest): RecipeDetail
 
-    // Upload recipe image
+    // Update recipe
+    @PUT("api/recipes/{slug}")
+    suspend fun updateRecipe(
+        @Path("slug") slug: String,
+        @Body recipe: RecipeDetail
+    ): RecipeDetail
+
+    // Upload recipe image from file
     @Multipart
-    @POST("api/recipes/{slug}/image")
+    @PUT("api/recipes/{slug}/image")
     suspend fun uploadRecipeImage(
         @Path("slug") slug: String,
-        @Part image: MultipartBody.Part
+        @Part image: MultipartBody.Part,
+        @Part("extension") extension: RequestBody
+    ): ResponseBody
+
+    // Upload recipe image from URL
+    @POST("api/recipes/{slug}/image")
+    suspend fun uploadRecipeImageFromUrl(
+        @Path("slug") slug: String,
+        @Body request: UploadImageFromUrlRequest
     ): ResponseBody
 
     // Get all units

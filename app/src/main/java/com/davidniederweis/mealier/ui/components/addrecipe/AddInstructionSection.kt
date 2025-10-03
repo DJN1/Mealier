@@ -10,12 +10,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.davidniederweis.mealier.ui.viewmodel.recipe.AddRecipeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.InstructionInput
+import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeFormViewModel
 
 @Composable
 fun AddInstructionSection(
-    viewModel: AddRecipeViewModel,
+    viewModel: RecipeFormViewModel,
     instructions: List<InstructionInput>
 ) {
     Card(

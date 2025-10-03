@@ -15,15 +15,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.davidniederweis.mealier.ui.screens.recipe.NutritionDialog
-import com.davidniederweis.mealier.ui.viewmodel.recipe.AddRecipeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeCreationState
+import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeFormViewModel
 import java.io.File
 import java.io.FileOutputStream
 
 @Composable
 fun ManualRecipeForm(
-    viewModel: AddRecipeViewModel,
-    creationState: RecipeCreationState
+    viewModel: RecipeFormViewModel,
+    creationState: RecipeCreationState,
+    submitButtonText: String = "Create Recipe",
+    onSubmit: () -> Unit
 ) {
     val context = LocalContext.current
     val recipeName by viewModel.recipeName.collectAsState()
@@ -188,18 +190,21 @@ fun ManualRecipeForm(
         AddInstructionSection(viewModel = viewModel, instructions = instructions)
 
         // Nutrition Button
+        val nutrition by viewModel.nutrition.collectAsState()
+        val hasNutrition = nutrition.hasAnyValue()
+        
         OutlinedButton(
             onClick = { showNutritionDialog = true },
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(Icons.Default.Analytics, contentDescription = null)
             Spacer(Modifier.width(8.dp))
-            Text("Add Nutrition Information")
+            Text(if (hasNutrition) "Edit Nutrition Information" else "Add Nutrition Information")
         }
 
-        // Create Button
+        // Submit Button
         Button(
-            onClick = { viewModel.createManualRecipe() },
+            onClick = onSubmit,
             modifier = Modifier.fillMaxWidth(),
             enabled = creationState !is RecipeCreationState.Loading
         ) {
@@ -209,14 +214,14 @@ fun ManualRecipeForm(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             } else {
-                Text("Create Recipe")
+                Text(submitButtonText)
             }
         }
 
         // Error Message
         if (creationState is RecipeCreationState.Error) {
             Text(
-                text = (creationState as RecipeCreationState.Error).message,
+                text = creationState.message,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodyMedium
             )

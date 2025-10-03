@@ -32,9 +32,11 @@ fun RecipeDetailContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        // Recipe Image
+        // Recipe Image - Add cache-busting parameter using updatedAt timestamp
+        val imageUrl = "${BuildConfig.BASE_URL}/api/media/recipes/${recipe.id}/images/original.webp" +
+                if (recipe.updatedAt != null) "?v=${recipe.updatedAt}" else ""
         AsyncImage(
-            model = "${BuildConfig.BASE_URL}/api/media/recipes/${recipe.id}/images/original.webp",
+            model = imageUrl,
             contentDescription = recipe.name,
             modifier = Modifier
                 .fillMaxWidth()

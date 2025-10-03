@@ -19,6 +19,8 @@ class ApiClient(
         ignoreUnknownKeys = true
         coerceInputValues = true
         isLenient = true
+        explicitNulls = true  // Include null fields in serialization
+        encodeDefaults = true  // Include default values in serialization
     }
 
     private val authInterceptor = Interceptor { chain ->

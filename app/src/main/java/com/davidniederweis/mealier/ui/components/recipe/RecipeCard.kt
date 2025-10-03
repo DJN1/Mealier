@@ -24,9 +24,10 @@ fun RecipeCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Always construct the standard image URL
-    val imageUrl = remember(recipe.id) {
-        val url = "${BuildConfig.BASE_URL}/api/media/recipes/${recipe.id}/images/original.webp"
+    // Always construct the standard image URL with cache-busting parameter
+    val imageUrl = remember(recipe.id, recipe.dateUpdated) {
+        val baseUrl = "${BuildConfig.BASE_URL}/api/media/recipes/${recipe.id}/images/original.webp"
+        val url = if (recipe.dateUpdated != null) "$baseUrl?v=${recipe.dateUpdated}" else baseUrl
         Logger.logImageLoad(url, recipe.id, "images/original.webp")
         url
     }

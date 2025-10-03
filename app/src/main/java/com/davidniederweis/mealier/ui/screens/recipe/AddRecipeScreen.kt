@@ -80,7 +80,9 @@ fun AddRecipeScreen(
             when (selectedTabIndex) {
                 0 -> ManualRecipeForm(
                     viewModel = viewModel,
-                    creationState = creationState
+                    creationState = creationState,
+                    submitButtonText = "Create Recipe",
+                    onSubmit = { viewModel.createManualRecipe() }
                 )
                 1 -> ImportUrlForm(
                     viewModel = viewModel,
