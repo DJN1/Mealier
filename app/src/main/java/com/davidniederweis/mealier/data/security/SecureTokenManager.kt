@@ -3,7 +3,6 @@ package com.davidniederweis.mealier.data.security
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -189,40 +188,6 @@ class SecureDataStoreManager(private val context: Context) {
         }
     }
 
-    // Biometric Settings
-    suspend fun setBiometricEnabled(enabled: Boolean) {
-        try {
-            context.dataStore.edit { prefs ->
-                prefs[KEY_BIOMETRIC_ENABLED] = enabled
-            }
-            Logger.i("SecureDataStore", "Biometric enabled set to: $enabled")
-        } catch (e: Exception) {
-            Logger.e("SecureDataStore", "Failed to set biometric status", e)
-        }
-    }
-
-    fun isBiometricEnabled(): Flow<Boolean> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                Logger.e("SecureDataStore", "Error reading biometric status", exception)
-                emit(androidx.datastore.preferences.core.emptyPreferences())
-            } else {
-                throw exception
-            }
-        }
-        .map { prefs ->
-            prefs[KEY_BIOMETRIC_ENABLED] ?: false
-        }
-
-    suspend fun isBiometricEnabledOnce(): Boolean {
-        return try {
-            isBiometricEnabled().first()
-        } catch (e: Exception) {
-            Logger.e("SecureDataStore", "Failed to check biometric status", e)
-            false
-        }
-    }
-
     // Clear All Data
     suspend fun clearAll() {
         try {
@@ -243,6 +208,5 @@ class SecureDataStoreManager(private val context: Context) {
         private val KEY_TOKEN = stringPreferencesKey("auth_token")
         private val KEY_USERNAME = stringPreferencesKey("username")
         private val KEY_PASSWORD = stringPreferencesKey("password")
-        private val KEY_BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
     }
 }

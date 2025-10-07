@@ -58,13 +58,26 @@ class AuthRepository(
             Logger.d("AuthRepository", "Fetching current user")
 
             // Interceptor will automatically add the Bearer token
+            // If token is expired (401), interceptor will attempt automatic refresh
             val user = authApi.getCurrentUser()
             Logger.i("AuthRepository", "User fetched successfully: ${user.username}")
 
             emit(Result.Success(user))
         } catch (e: Exception) {
             Logger.e("AuthRepository", "Get current user error", e)
-            emit(Result.Error(e.message ?: "Failed to get user", e))
+            
+            // Check if this is an authentication error (401)
+            // This happens when token refresh also failed
+            val is401 = e.message?.contains("401") == true || 
+                        e.message?.contains("Unauthorized") == true
+            
+            if (is401) {
+                Logger.w("AuthRepository", "Authentication failed, clearing token")
+                tokenManager.clearToken()
+                emit(Result.Error("Session expired. Please login again.", e))
+            } else {
+                emit(Result.Error(e.message ?: "Failed to get user", e))
+            }
         }
     }
 }

@@ -54,7 +54,6 @@ fun RecipeSearchBar(
                     IconButton(
                         onClick = {
                             onQueryChange("")
-                            onSearch()
                         }
                     ) {
                         Icon(

@@ -13,13 +13,13 @@ class MealierApplication : Application() {
 
     // Initialize dependencies
     private val secureDataStore by lazy { SecureDataStoreManager(this) }
-    private val apiClient by lazy { ApiClient(secureDataStore) }
-    private val authRepository by lazy {
-        AuthRepository(apiClient.authApi, secureDataStore)
-    }
-    private val recipeRepository by lazy { RecipeRepository(apiClient.recipeApi) }
     private val themePreferences by lazy { ThemePreferences(this) }
     private val biometricsPreferences by lazy { BiometricsPreferences(this) }
+    private val apiClient by lazy { ApiClient(secureDataStore, biometricsPreferences) }
+    private val authRepository by lazy {
+        AuthRepository(apiClient.getAuthApi(), secureDataStore)
+    }
+    private val recipeRepository by lazy { RecipeRepository(apiClient.recipeApi) }
 
     // ViewModel factory
     val viewModelFactory by lazy {

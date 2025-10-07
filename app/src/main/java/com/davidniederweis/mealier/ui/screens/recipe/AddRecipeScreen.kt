@@ -6,9 +6,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
+import androidx.compose.foundation.layout.imePadding
+import com.davidniederweis.mealier.ui.components.addrecipe.ImportUrlForm
 import com.davidniederweis.mealier.ui.components.addrecipe.ManualRecipeForm
-import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.AddRecipeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeCreationState
@@ -19,8 +19,6 @@ fun AddRecipeScreen(
     initialTab: Int = 0,
     onNavigateBack: () -> Unit,
     onRecipeCreated: (String) -> Unit,
-    navController: NavController,
-    isAdmin: Boolean,
     viewModel: AddRecipeViewModel = appViewModel()
 ) {
     val creationState by viewModel.creationState.collectAsState()
@@ -52,18 +50,13 @@ fun AddRecipeScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
-        },
-        bottomBar = {
-            BottomNavBar(
-                navController = navController,
-                isAdmin = isAdmin
-            )
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .imePadding()
         ) {
             // Tabs
             TabRow(selectedTabIndex = selectedTabIndex) {

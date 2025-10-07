@@ -29,7 +29,7 @@ class ViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(AuthViewModel::class.java) -> {
-                AuthViewModel(authRepository, tokenManager) as T
+                AuthViewModel(authRepository, tokenManager, biometricsPreferences) as T
             }
 
             modelClass.isAssignableFrom(RecipeViewModel::class.java) -> {

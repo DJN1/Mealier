@@ -9,8 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.davidniederweis.mealier.data.model.food.Food
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
-import com.davidniederweis.mealier.ui.screens.recipe.FoodDropdown
-import com.davidniederweis.mealier.ui.screens.recipe.UnitDropdown
 import com.davidniederweis.mealier.ui.viewmodel.recipe.IngredientInput
 
 @Composable

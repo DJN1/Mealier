@@ -356,7 +356,7 @@ class EditRecipeViewModel(
                             RecipeInstruction(
                                 id = origInst.id,
                                 title = input.title.takeIf { it.isNotBlank() } ?: "",
-                                text = origInst.text,
+                                text = input.text.takeIf { it.isNotBlank() },
                                 summary = input.text.takeIf { it.isNotBlank() },
                                 ingredientReferences = origInst.ingredientReferences
                             )

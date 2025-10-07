@@ -110,9 +110,7 @@ fun NavGraph(
                     navController.navigate(Screen.RecipeDetail.createRoute(slug)) {
                         popUpTo(Screen.AddRecipe.route) { inclusive = true }
                     }
-                },
-                navController = navController,
-                isAdmin = isAdmin
+                }
             )
         }
 
@@ -138,9 +136,7 @@ fun NavGraph(
                         }
                         // This removes both the old detail screen and the edit screen from the stack
                     }
-                },
-                navController = navController,
-                isAdmin = isAdmin
+                }
             )
         }
 

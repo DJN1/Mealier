@@ -6,11 +6,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
+import androidx.compose.foundation.layout.imePadding
 import com.davidniederweis.mealier.ui.components.addrecipe.ManualRecipeForm
 import com.davidniederweis.mealier.ui.components.general.ErrorMessage
 import com.davidniederweis.mealier.ui.components.general.LoadingBox
-import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.EditRecipeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.LoadingState
@@ -22,8 +21,6 @@ fun EditRecipeScreen(
     slug: String,
     onNavigateBack: () -> Unit,
     onRecipeUpdated: (String) -> Unit,
-    navController: NavController,
-    isAdmin: Boolean,
     viewModel: EditRecipeViewModel = appViewModel()
 ) {
     val updateState by viewModel.updateState.collectAsState()
@@ -59,12 +56,6 @@ fun EditRecipeScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
-        },
-        bottomBar = {
-            BottomNavBar(
-                navController = navController,
-                isAdmin = isAdmin
-            )
         }
     ) { paddingValues ->
         when (loadingState) {
@@ -83,6 +74,7 @@ fun EditRecipeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
+                        .imePadding()
                 ) {
                     ManualRecipeForm(
                         viewModel = viewModel,

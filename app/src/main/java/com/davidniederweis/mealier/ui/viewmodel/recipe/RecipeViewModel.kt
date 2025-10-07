@@ -42,7 +42,7 @@ class RecipeViewModel(
                 val recipes = repository.getAllRecipes(
                     page = currentPage,
                     perPage = perPage,
-                    search = if (_searchQuery.value.isNotBlank()) _searchQuery.value else null
+                    search = _searchQuery.value.ifBlank { null }
                 )
 
                 if (refresh) {
@@ -70,7 +70,7 @@ class RecipeViewModel(
                 val recipes = repository.getAllRecipes(
                     page = currentPage,
                     perPage = perPage,
-                    search = if (_searchQuery.value.isNotBlank()) _searchQuery.value else null
+                    search = _searchQuery.value.ifBlank { null }
                 )
 
                 allRecipes.addAll(recipes)

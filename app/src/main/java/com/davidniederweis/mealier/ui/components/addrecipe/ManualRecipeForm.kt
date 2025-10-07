@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.davidniederweis.mealier.ui.screens.recipe.NutritionDialog
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeCreationState
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeFormViewModel
 import java.io.File

@@ -2,6 +2,7 @@ package com.davidniederweis.mealier.data.api
 
 import com.davidniederweis.mealier.BuildConfig
 import com.davidniederweis.mealier.data.security.SecureDataStoreManager
+import com.davidniederweis.mealier.data.preferences.BiometricsPreferences
 import com.davidniederweis.mealier.util.Logger
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
@@ -11,9 +12,12 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 
 class ApiClient(
-    private val tokenManager: SecureDataStoreManager
+    private val tokenManager: SecureDataStoreManager,
+    private val biometricsPreferences: BiometricsPreferences
 ) {
     private val json = Json {
         ignoreUnknownKeys = true
@@ -59,6 +63,64 @@ class ApiClient(
             message = response.message
         )
 
+        // Handle 401 Unauthorized - attempt token refresh
+        if (response.code == 401 && !request.url.toString().contains("/api/auth/token")) {
+            Logger.w("ApiClient", "Received 401 Unauthorized, attempting token refresh")
+            response.close()
+            
+            val refreshed = runBlocking {
+                try {
+                    // Check if biometric is enabled and we have stored credentials
+                    val biometricEnabled = biometricsPreferences.biometricEnabled.first()
+                    if (biometricEnabled) {
+                        val username = tokenManager.getUsername()
+                        val password = tokenManager.getPassword()
+                        
+                        if (username != null && password != null) {
+                            Logger.i("ApiClient", "Attempting automatic token refresh with stored credentials")
+                            
+                            // Try to get a new token
+                            val tokenResponse = authApi.login(username, password)
+                            tokenManager.saveToken(tokenResponse.accessToken)
+                            
+                            Logger.i("ApiClient", "Token refresh successful")
+                            true
+                        } else {
+                            Logger.w("ApiClient", "Biometric enabled but credentials not found")
+                            tokenManager.clearToken()
+                            false
+                        }
+                    } else {
+                        Logger.w("ApiClient", "Biometric not enabled, clearing token")
+                        tokenManager.clearToken()
+                        false
+                    }
+                } catch (e: Exception) {
+                    Logger.e("ApiClient", "Token refresh failed: ${e.message}", e)
+                    tokenManager.clearToken()
+                    false
+                }
+            }
+            
+            // Retry the original request with new token if refresh succeeded
+            if (refreshed) {
+                val newToken = tokenManager.getTokenSync()
+                if (newToken != null) {
+                    Logger.i("ApiClient", "Retrying original request with new token")
+                    val newRequest = originalRequest.newBuilder()
+                        .header("Authorization", "Bearer $newToken")
+                        .build()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            }
+            
+            // If refresh failed, return a new 401 response
+            return@Interceptor response.newBuilder()
+                .code(401)
+                .message("Unauthorized - Token expired")
+                .build()
+        }
+
         response
     }
 
@@ -86,11 +148,23 @@ class ApiClient(
         .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
 
-    val authApi: AuthApi = retrofit.create(AuthApi::class.java)
-    val recipeApi: RecipeApi = retrofit.create(RecipeApi::class.java)
-    val userApi: UserApi = retrofit.create(UserApi::class.java)
+    // Create auth API first (needed for token refresh in interceptor)
+    private var authApi: AuthApi
+    
+    val recipeApi: RecipeApi
+    val userApi: UserApi
 
     init {
         Logger.i("ApiClient", "Initialized with base URL: ${BuildConfig.BASE_URL}")
+        
+        // Initialize auth API for use in interceptor
+        authApi = retrofit.create(AuthApi::class.java)
+        
+        // Initialize other APIs
+        recipeApi = retrofit.create(RecipeApi::class.java)
+        userApi = retrofit.create(UserApi::class.java)
     }
+    
+    // Expose authApi for repository use
+    fun getAuthApi(): AuthApi = authApi
 }

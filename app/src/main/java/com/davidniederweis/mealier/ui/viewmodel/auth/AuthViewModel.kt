@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.davidniederweis.mealier.data.repository.AuthRepository
 import com.davidniederweis.mealier.data.security.SecureDataStoreManager
+import com.davidniederweis.mealier.data.preferences.BiometricsPreferences
 import com.davidniederweis.mealier.data.repository.Result
+import com.davidniederweis.mealier.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +14,8 @@ import kotlinx.coroutines.launch
 
 class AuthViewModel(
     private val authRepository: AuthRepository,
-    private val tokenManager: SecureDataStoreManager
+    private val tokenManager: SecureDataStoreManager,
+    private val biometricsPreferences: BiometricsPreferences
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
@@ -37,15 +40,12 @@ class AuthViewModel(
             _isLoggedIn.value = loggedIn
 
             if (loggedIn) {
-                val biometricEnabled = tokenManager.isBiometricEnabledOnce()
-                _biometricEnabled.value = biometricEnabled
-
-                if (biometricEnabled) {
-                    _showBiometricPrompt.value = true
-                } else {
-                    loadCurrentUser()
-                }
+                Logger.i("AuthViewModel", "Token found, validating...")
+                // Always try to validate the token by fetching current user
+                // This will trigger automatic refresh if token is expired (401)
+                loadCurrentUser()
             } else {
+                Logger.i("AuthViewModel", "No token found")
                 _authState.value = AuthState.Unauthenticated
             }
         }
@@ -94,7 +94,7 @@ class AuthViewModel(
                     is Result.Success -> {
                         _isLoggedIn.value = true
                         if (enableBiometric) {
-                            tokenManager.setBiometricEnabled(true)
+                            biometricsPreferences.setBiometricEnabled(true)
                             _biometricEnabled.value = true
                         }
                         AuthState.Success(result.data)
@@ -111,7 +111,7 @@ class AuthViewModel(
     fun logout() {
         viewModelScope.launch {
             authRepository.logout()
-            tokenManager.setBiometricEnabled(false)
+            biometricsPreferences.setBiometricEnabled(false)
             _isLoggedIn.value = false
             _biometricEnabled.value = false
             _authState.value = AuthState.Unauthenticated
@@ -126,7 +126,7 @@ class AuthViewModel(
 
     fun toggleBiometric(enabled: Boolean) {
         viewModelScope.launch {
-            tokenManager.setBiometricEnabled(enabled)
+            biometricsPreferences.setBiometricEnabled(enabled)
             _biometricEnabled.value = enabled
         }
     }

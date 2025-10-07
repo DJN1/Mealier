@@ -1,4 +1,4 @@
-package com.davidniederweis.mealier.ui.screens.recipe
+package com.davidniederweis.mealier.ui.components.addrecipe
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
