@@ -38,6 +38,10 @@ interface RecipeApi {
         @Body recipe: RecipeDetail
     ): RecipeDetail
 
+    // Delete recipe
+    @DELETE("api/recipes/{slug}")
+    suspend fun deleteRecipe(@Path("slug") slug: String)
+
     // Upload recipe image from file
     @Multipart
     @PUT("api/recipes/{slug}/image")

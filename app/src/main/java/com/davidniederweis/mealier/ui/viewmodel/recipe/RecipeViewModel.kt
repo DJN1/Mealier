@@ -135,4 +135,15 @@ class RecipeViewModel(
     fun refresh() {
         loadRecipes(refresh = true)
     }
+
+    fun deleteRecipe(slug: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.deleteRecipe(slug)
+                onSuccess()
+            } catch (e: Exception) {
+                onError(e.message ?: "Failed to delete recipe")
+            }
+        }
+    }
 }

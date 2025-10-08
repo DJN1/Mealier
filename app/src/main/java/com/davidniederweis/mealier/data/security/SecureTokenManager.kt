@@ -21,12 +21,12 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 class SecureDataStoreManager(private val context: Context) {
 
-    private val aead: Aead by lazy {
+    private val aead: Aead? by lazy {
         initializeTink()
     }
 
-    private fun initializeTink(): Aead {
-        try {
+    private fun initializeTink(): Aead? {
+        return try {
             // Register Tink configuration
             AeadConfig.register()
 
@@ -39,16 +39,44 @@ class SecureDataStoreManager(private val context: Context) {
                 .keysetHandle
 
             Logger.i("SecureDataStore", "Tink initialized successfully")
-            return keysetHandle.getPrimitive(Aead::class.java)
+            keysetHandle.getPrimitive(Aead::class.java)
         } catch (e: Exception) {
-            Logger.e("SecureDataStore", "Failed to initialize Tink", e)
-            throw e
+            Logger.e("SecureDataStore", "Failed to initialize Tink, attempting recovery", e)
+            
+            // Try to recover by clearing corrupted keyset and recreating
+            try {
+                Logger.i("SecureDataStore", "Clearing corrupted keyset and recreating")
+                context.getSharedPreferences(KEYSET_PREF_NAME, android.content.Context.MODE_PRIVATE)
+                    .edit()
+                    .clear()
+                    .apply()
+                
+                // Try again with fresh keyset
+                AeadConfig.register()
+                val keysetHandle = AndroidKeysetManager.Builder()
+                    .withSharedPref(context, KEYSET_NAME, KEYSET_PREF_NAME)
+                    .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
+                    .withMasterKeyUri(MASTER_KEY_URI)
+                    .build()
+                    .keysetHandle
+                
+                Logger.i("SecureDataStore", "Tink recovery successful")
+                keysetHandle.getPrimitive(Aead::class.java)
+            } catch (recoveryException: Exception) {
+                Logger.e("SecureDataStore", "Tink recovery failed", recoveryException)
+                null
+            }
         }
     }
 
     private fun encrypt(plaintext: String): String {
         return try {
-            val ciphertext = aead.encrypt(plaintext.toByteArray(), null)
+            val aeadInstance = aead
+            if (aeadInstance == null) {
+                Logger.e("SecureDataStore", "Cannot encrypt: Tink not initialized")
+                throw IllegalStateException("Tink not initialized")
+            }
+            val ciphertext = aeadInstance.encrypt(plaintext.toByteArray(), null)
             android.util.Base64.encodeToString(ciphertext, android.util.Base64.DEFAULT)
         } catch (e: Exception) {
             Logger.e("SecureDataStore", "Encryption failed", e)
@@ -58,8 +86,13 @@ class SecureDataStoreManager(private val context: Context) {
 
     private fun decrypt(ciphertext: String): String {
         return try {
+            val aeadInstance = aead
+            if (aeadInstance == null) {
+                Logger.w("SecureDataStore", "Cannot decrypt: Tink not initialized")
+                throw IllegalStateException("Tink not initialized")
+            }
             val decoded = android.util.Base64.decode(ciphertext, android.util.Base64.DEFAULT)
-            val plaintext = aead.decrypt(decoded, null)
+            val plaintext = aeadInstance.decrypt(decoded, null)
             String(plaintext)
         } catch (e: Exception) {
             Logger.e("SecureDataStore", "Decryption failed", e)

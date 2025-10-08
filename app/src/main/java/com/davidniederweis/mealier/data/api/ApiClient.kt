@@ -3,6 +3,7 @@ package com.davidniederweis.mealier.data.api
 import com.davidniederweis.mealier.BuildConfig
 import com.davidniederweis.mealier.data.security.SecureDataStoreManager
 import com.davidniederweis.mealier.data.preferences.BiometricsPreferences
+import com.davidniederweis.mealier.data.preferences.ServerPreferences
 import com.davidniederweis.mealier.util.Logger
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
@@ -17,7 +18,8 @@ import kotlinx.coroutines.flow.first
 
 class ApiClient(
     private val tokenManager: SecureDataStoreManager,
-    private val biometricsPreferences: BiometricsPreferences
+    private val biometricsPreferences: BiometricsPreferences,
+    private val serverPreferences: ServerPreferences
 ) {
     private val json = Json {
         ignoreUnknownKeys = true
@@ -142,29 +144,41 @@ class ApiClient(
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BuildConfig.BASE_URL)
-        .client(okHttpClient)
-        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-        .build()
+    // Get base URL from preferences or use BuildConfig as fallback
+    private val baseUrl: String by lazy {
+        runBlocking {
+            val url = serverPreferences.getServerUrlOnce()
+            if (url.isNotBlank()) {
+                Logger.i("ApiClient", "Using server URL from preferences: $url")
+                url
+            } else {
+                Logger.i("ApiClient", "Using default server URL from BuildConfig: ${BuildConfig.BASE_URL}")
+                BuildConfig.BASE_URL
+            }
+        }
+    }
+
+    private val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(okHttpClient)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+    }
 
     // Create auth API first (needed for token refresh in interceptor)
-    private var authApi: AuthApi
+    val authApi: AuthApi by lazy {
+        retrofit.create(AuthApi::class.java)
+    }
     
-    val recipeApi: RecipeApi
-    val userApi: UserApi
-
-    init {
-        Logger.i("ApiClient", "Initialized with base URL: ${BuildConfig.BASE_URL}")
-        
-        // Initialize auth API for use in interceptor
-        authApi = retrofit.create(AuthApi::class.java)
-        
-        // Initialize other APIs
-        recipeApi = retrofit.create(RecipeApi::class.java)
-        userApi = retrofit.create(UserApi::class.java)
+    val recipeApi: RecipeApi by lazy {
+        retrofit.create(RecipeApi::class.java)
+    }
+    
+    val userApi: UserApi by lazy {
+        retrofit.create(UserApi::class.java)
     }
     
     // Expose authApi for repository use
-    fun getAuthApi(): AuthApi = authApi
+//    fun getAuthApi(): AuthApi = authApi
 }

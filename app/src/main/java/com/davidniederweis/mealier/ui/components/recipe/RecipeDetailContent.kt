@@ -1,5 +1,7 @@
 package com.davidniederweis.mealier.ui.components.recipe
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -26,6 +29,21 @@ fun RecipeDetailContent(
     val gatheredIngredients = remember { mutableStateSetOf<Int>() }
     // Track completed instructions by their index
     val completedInstructions = remember { mutableStateSetOf<Int>() }
+    
+    // Track current servings count for scaling ingredients
+    var currentServings by remember { mutableStateOf(recipe.recipeServings) }
+    
+    // Calculate servings multiplier from current servings
+    val servingsMultiplier = if (recipe.recipeServings > 0) {
+        currentServings / recipe.recipeServings
+    } else {
+        1.0
+    }
+    
+    // Check if recipe has parsed ingredients (can be scaled)
+    val hasParsedIngredients = remember(recipe) {
+        recipe.recipeIngredient.any { it.unit != null && it.food != null }
+    }
 
     Column(
         modifier = modifier
@@ -85,6 +103,10 @@ fun RecipeDetailContent(
                         )
                         ServingsCard(
                             servingsDisplay = servingsDisplay,
+                            baseServings = recipe.recipeServings,
+                            currentServings = currentServings,
+                            onServingsChange = { currentServings = it },
+                            canScale = hasParsedIngredients,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -100,6 +122,10 @@ fun RecipeDetailContent(
                 hasServingsData -> {
                     ServingsCard(
                         servingsDisplay = servingsDisplay,
+                        baseServings = recipe.recipeServings,
+                        currentServings = currentServings,
+                        onServingsChange = { currentServings = it },
+                        canScale = hasParsedIngredients,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -150,6 +176,7 @@ fun RecipeDetailContent(
                                     val isGathered = gatheredIngredients.contains(index)
                                     IngredientItem(
                                         ingredient = ingredient,
+                                        servingsMultiplier = servingsMultiplier,
                                         isGathered = isGathered,
                                         onToggle = {
                                             if (isGathered) {
@@ -232,6 +259,30 @@ fun RecipeDetailContent(
                                 )
                             }
                         }
+                    }
+                }
+            }
+
+            // View Original Recipe Button (only for imported recipes)
+            recipe.orgURL?.let { originalUrl ->
+                if (originalUrl.isNotBlank()) {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    OutlinedButton(
+                        onClick = {
+                            val intent = android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse(originalUrl)
+                            )
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.OpenInBrowser,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("View Original Recipe")
                     }
                 }
             }

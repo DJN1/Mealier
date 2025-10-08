@@ -26,6 +26,7 @@ import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.auth.AuthState
 import com.davidniederweis.mealier.ui.viewmodel.auth.AuthViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.BiometricsViewModel
+import com.davidniederweis.mealier.ui.viewmodel.preferences.ServerViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,21 +34,31 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     authViewModel: AuthViewModel = appViewModel(),
-    biometricsViewModel: BiometricsViewModel = appViewModel()
+    biometricsViewModel: BiometricsViewModel = appViewModel(),
+    serverViewModel: ServerViewModel = appViewModel()
 ) {
     val authState by authViewModel.authState.collectAsState()
     val showBiometricPrompt by authViewModel.showBiometricPrompt.collectAsState()
     val biometricEnabled by biometricsViewModel.biometricEnabled.collectAsState()
+    val serverUrl by serverViewModel.serverUrl.collectAsState()
 
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val scope = rememberCoroutineScope()
 
+    var serverUrlInput by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var enableBiometric by remember { mutableStateOf(false) }
     var biometricTriggered by remember { mutableStateOf(false) }
+    
+    // Initialize server URL input from saved value
+    LaunchedEffect(serverUrl) {
+        if (serverUrlInput.isEmpty() && serverUrl.isNotBlank()) {
+            serverUrlInput = serverUrl
+        }
+    }
 
     // Handle biometric prompt when app starts
     // Only show if biometric is enabled in settings AND showBiometricPrompt is true
@@ -111,6 +122,29 @@ fun LoginScreen(
             )
 
             Spacer(modifier = Modifier.height(48.dp))
+            
+            // Server URL Field
+            OutlinedTextField(
+                value = serverUrlInput,
+                onValueChange = { serverUrlInput = it },
+                label = { Text("Server URL") },
+                placeholder = { Text("https://your-mealie-instance.com") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Uri,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
+                enabled = authState !is AuthState.Loading,
+                supportingText = {
+                    Text("Enter the URL of your Mealie instance")
+                }
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Username Field
             OutlinedTextField(
@@ -166,8 +200,9 @@ fun LoginScreen(
                 keyboardActions = KeyboardActions(
                     onDone = {
                         focusManager.clearFocus()
-                        if (username.isNotBlank() && password.isNotBlank()) {
+                        if (serverUrlInput.isNotBlank() && username.isNotBlank() && password.isNotBlank()) {
                             scope.launch {
+                                serverViewModel.setServerUrl(serverUrlInput)
                                 authViewModel.login(username, password, enableBiometric)
                             }
                         }
@@ -204,11 +239,13 @@ fun LoginScreen(
             Button(
                 onClick = {
                     scope.launch {
+                        serverViewModel.setServerUrl(serverUrlInput)
                         authViewModel.login(username, password, enableBiometric)
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = username.isNotBlank() &&
+                enabled = serverUrlInput.isNotBlank() &&
+                        username.isNotBlank() &&
                         password.isNotBlank() &&
                         authState !is AuthState.Loading
             ) {

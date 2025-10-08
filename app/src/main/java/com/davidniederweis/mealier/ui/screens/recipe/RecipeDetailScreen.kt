@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.davidniederweis.mealier.BuildConfig
 import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
@@ -33,6 +34,8 @@ fun RecipeDetailScreen(
     val recipeDetailState by viewModel.recipeDetailState.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var deleteError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(slug) {
         viewModel.loadRecipeDetail(slug)
@@ -97,6 +100,15 @@ fun RecipeDetailScreen(
                                 contentDescription = "Favorite"
                             )
                         }
+                        // Delete button (admin only)
+                        if (isAdmin) {
+                            IconButton(onClick = { showDeleteDialog = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete Recipe"
+                                )
+                            }
+                        }
                     }
                 },
                 scrollBehavior = scrollBehavior
@@ -152,5 +164,54 @@ fun RecipeDetailScreen(
                 LoadingBox(modifier = Modifier.fillMaxSize())
             }
         }
+    }
+
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Recipe?") },
+            text = { 
+                Column {
+                    Text("Are you sure you want to delete this recipe? This action cannot be undone.")
+                    deleteError?.let { error ->
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = error,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteRecipe(
+                            slug = slug,
+                            onSuccess = {
+                                showDeleteDialog = false
+                                // Refresh the recipes list before navigating back
+                                viewModel.refresh()
+                                onNavigateBack()
+                            },
+                            onError = { error ->
+                                deleteError = error
+                            }
+                        )
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    showDeleteDialog = false
+                    deleteError = null
+                }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

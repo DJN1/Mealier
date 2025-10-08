@@ -144,6 +144,18 @@ class RecipeRepository(
         }
     }
 
+    // Delete recipe
+    suspend fun deleteRecipe(slug: String) {
+        return try {
+            Logger.d("RecipeRepository", "Deleting recipe: $slug")
+            recipeApi.deleteRecipe(slug)
+            Logger.i("RecipeRepository", "Successfully deleted recipe: $slug")
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error deleting recipe: ${e.message}", e)
+            throw e
+        }
+    }
+
     // Upload recipe image from file
     suspend fun uploadRecipeImage(slug: String, imageFile: File): Boolean {
         return try {

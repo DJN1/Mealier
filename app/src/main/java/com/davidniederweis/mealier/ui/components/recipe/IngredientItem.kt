@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -18,27 +19,27 @@ import com.davidniederweis.mealier.data.model.ingredient.RecipeIngredient
 @Composable
 fun IngredientItem(
     ingredient: RecipeIngredient,
+    servingsMultiplier: Double = 1.0,
     isGathered: Boolean,
     onToggle: () -> Unit
 ) {
-    val annotatedText = formatIngredientAnnotated(ingredient, isGathered)
+    val annotatedText = formatIngredientAnnotated(ingredient, servingsMultiplier, isGathered)
 
     if (annotatedText.text.isNotBlank()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable(onClick = onToggle)
-                .padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .clickable(onClick = onToggle),
+            horizontalArrangement = Arrangement.spacedBy(0.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "•",
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (isGathered) {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                } else {
-                    MaterialTheme.colorScheme.primary
-                }
+            Checkbox(
+                checked = isGathered,
+                onCheckedChange = { onToggle() },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary,
+                    checkmarkColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
             Text(
                 text = annotatedText,
@@ -52,9 +53,11 @@ fun IngredientItem(
 
 /**
  * Formats an ingredient as AnnotatedString with italic notes and optional strikethrough.
+ * Scales the quantity by the servings multiplier if the ingredient is parsed.
  */
 private fun formatIngredientAnnotated(
     ingredient: RecipeIngredient,
+    servingsMultiplier: Double,
     isGathered: Boolean
 ): AnnotatedString {
     return buildAnnotatedString {
@@ -80,22 +83,21 @@ private fun formatIngredientAnnotated(
 
         // Add quantity if not disabled and > 0
         if (!ingredient.disableAmount && ingredient.quantity > 0.0) {
-            val quantity = ingredient.quantity
-            val quantityInt = quantity.toInt()
+            // Scale quantity if ingredient has unit and food (parsed ingredient)
+            val scaledQuantity = if (ingredient.unit != null && ingredient.food != null) {
+                ingredient.quantity * servingsMultiplier
+            } else {
+                ingredient.quantity
+            }
+            
+            val quantityInt = scaledQuantity.toInt()
 
             // Format as integer if no decimal part
-            val quantityStr = if (quantity == quantityInt.toDouble()) {
+            val quantityStr = if (scaledQuantity == quantityInt.toDouble()) {
                 quantityInt.toString()
             } else {
-                // Format fractions nicely
-                when (quantity) {
-                    0.25 -> "¼"
-                    0.33, 0.333 -> "⅓"
-                    0.5 -> "½"
-                    0.66, 0.666, 0.67 -> "⅔"
-                    0.75 -> "¾"
-                    else -> quantity.toString()
-                }
+                // Use helper function to format with fractions
+                formatQuantityWithFraction(scaledQuantity)
             }
             parts.add(quantityStr)
         }
@@ -148,5 +150,52 @@ private fun formatIngredientAnnotated(
                 append("Unknown ingredient")
             }
         }
+    }
+}
+
+/**
+ * Format a quantity with proper fraction support.
+ * Finds the closest common fraction within tolerance.
+ */
+private fun formatQuantityWithFraction(quantity: Double): String {
+    val intPart = quantity.toInt()
+    val fracPart = quantity - intPart
+    
+    // Common fractions with their decimal values
+    val fractions = listOf(
+        0.125 to "⅛",
+        0.25 to "¼",
+        0.333 to "⅓",
+        0.375 to "⅜",
+        0.5 to "½",
+        0.625 to "⅝",
+        0.667 to "⅔",
+        0.75 to "¾",
+        0.875 to "⅞"
+    )
+    
+    // Tolerance for fraction matching (about 1/32)
+    val tolerance = 0.04
+    
+    // Find the closest fraction
+    val closestFraction = fractions.minByOrNull { (value, _) ->
+        kotlin.math.abs(fracPart - value)
+    }
+    
+    val fracStr = if (closestFraction != null && kotlin.math.abs(fracPart - closestFraction.first) <= tolerance) {
+        closestFraction.second
+    } else if (fracPart < 0.001) {
+        ""
+    } else {
+        // Format to 3 decimal places and remove trailing zeros
+        val formatted = "%.3f".format(fracPart)
+        formatted.trimEnd('0').trimEnd('.')
+    }
+    
+    return when {
+        intPart > 0 && fracStr.isNotEmpty() -> "$intPart $fracStr".trim()
+        intPart > 0 -> intPart.toString()
+        fracStr.isNotEmpty() -> fracStr
+        else -> quantity.toString()
     }
 }
