@@ -14,7 +14,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.SubcomposeAsyncImage
-import com.davidniederweis.mealier.BuildConfig
 import com.davidniederweis.mealier.data.model.recipe.RecipeSummary
 import com.davidniederweis.mealier.util.Logger
 
@@ -22,14 +21,19 @@ import com.davidniederweis.mealier.util.Logger
 fun RecipeCard(
     recipe: RecipeSummary,
     onClick: () -> Unit,
+    baseUrl: String,
     modifier: Modifier = Modifier
 ) {
     // Always construct the standard image URL with cache-busting parameter
-    val imageUrl = remember(recipe.id, recipe.dateUpdated) {
-        val baseUrl = "${BuildConfig.BASE_URL}/api/media/recipes/${recipe.id}/images/original.webp"
-        val url = if (recipe.dateUpdated != null) "$baseUrl?v=${recipe.dateUpdated}" else baseUrl
-        Logger.logImageLoad(url, recipe.id, "images/original.webp")
-        url
+    val imageUrl = remember(recipe.id, recipe.dateUpdated, baseUrl) {
+        if (baseUrl.isBlank()) {
+            ""
+        } else {
+            val constructedUrl = "$baseUrl/api/media/recipes/${recipe.id}/images/original.webp"
+            val url = if (recipe.dateUpdated != null) "$constructedUrl?v=${recipe.dateUpdated}" else constructedUrl
+            Logger.logImageLoad(url, recipe.id, "images/original.webp")
+            url
+        }
     }
 
     Card(
@@ -52,7 +56,9 @@ fun RecipeCard(
                     Logger.logImageSuccess(imageUrl)
                 },
                 onError = { error ->
-                    Logger.logImageError(imageUrl, error.result.throwable)
+                    if (imageUrl.isNotBlank()) {
+                        Logger.logImageError(imageUrl, error.result.throwable)
+                    }
                 },
                 loading = {
                     Box(

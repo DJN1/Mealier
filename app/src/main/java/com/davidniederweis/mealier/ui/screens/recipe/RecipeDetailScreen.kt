@@ -32,6 +32,7 @@ fun RecipeDetailScreen(
     viewModel: RecipeViewModel = appViewModel()
 ) {
     val recipeDetailState by viewModel.recipeDetailState.collectAsState()
+    val baseUrl by viewModel.baseUrl.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -146,10 +147,10 @@ fun RecipeDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-                    recipe = state.recipe
+                    recipe = state.recipe,
+                    baseUrl = baseUrl
                 )
             }
-
             is RecipeDetailState.Error -> {
                 ErrorMessage(
                     message = state.message,

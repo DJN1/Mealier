@@ -40,6 +40,7 @@ fun HomeScreen(
 ) {
     val recipeListState by viewModel.recipeListState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val baseUrl by viewModel.baseUrl.collectAsState()
     val listState = rememberLazyGridState()
 
     var isRefreshing by remember { mutableStateOf(false) }
@@ -152,7 +153,8 @@ fun HomeScreen(
                                 ) { recipe ->
                                     RecipeCard(
                                         recipe = recipe,
-                                        onClick = { onRecipeClick(recipe.slug) }
+                                        onClick = { onRecipeClick(recipe.slug) },
+                                        baseUrl = baseUrl
                                     )
                                 }
 

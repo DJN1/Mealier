@@ -2,14 +2,18 @@ package com.davidniederweis.mealier.ui.viewmodel.recipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.davidniederweis.mealier.BuildConfig
 import com.davidniederweis.mealier.data.model.recipe.RecipeSummary
+import com.davidniederweis.mealier.data.preferences.ServerPreferences
 import com.davidniederweis.mealier.data.repository.RecipeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
 class RecipeViewModel(
-    private val repository: RecipeRepository
+    private val repository: RecipeRepository,
+    private val serverPreferences: ServerPreferences
 ) : ViewModel() {
 
     private val _recipeListState = MutableStateFlow<RecipeListState>(RecipeListState.Idle)
@@ -21,6 +25,9 @@ class RecipeViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _baseUrl = MutableStateFlow("")
+    val baseUrl: StateFlow<String> = _baseUrl.asStateFlow()
+
     private var currentPage = 1
     private val perPage = 50
     private var isLoadingMore = false
@@ -28,6 +35,10 @@ class RecipeViewModel(
 
     init {
         loadRecipes()
+        viewModelScope.launch {
+            val url = serverPreferences.getServerUrlOnce()
+            _baseUrl.value = if (url.isNotBlank()) url else BuildConfig.BASE_URL
+        }
     }
 
     fun loadRecipes(refresh: Boolean = false) {

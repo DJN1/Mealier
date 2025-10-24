@@ -21,16 +21,17 @@ fun IngredientItem(
     ingredient: RecipeIngredient,
     servingsMultiplier: Double = 1.0,
     isGathered: Boolean,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val annotatedText = formatIngredientAnnotated(ingredient, servingsMultiplier, isGathered)
 
     if (annotatedText.text.isNotBlank()) {
         Row(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
+                .height(20.dp) // Constrain height to be tight with text
                 .clickable(onClick = onToggle),
-            horizontalArrangement = Arrangement.spacedBy(0.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
@@ -41,6 +42,7 @@ fun IngredientItem(
                     checkmarkColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = annotatedText,
                 style = MaterialTheme.typography.bodyLarge,

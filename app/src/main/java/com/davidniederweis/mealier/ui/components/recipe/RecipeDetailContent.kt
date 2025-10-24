@@ -17,12 +17,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.davidniederweis.mealier.BuildConfig
 import com.davidniederweis.mealier.data.model.recipe.RecipeDetail
 
 @Composable
 fun RecipeDetailContent(
     recipe: RecipeDetail,
+    baseUrl: String,
     modifier: Modifier = Modifier
 ) {
     // Track gathered ingredients by their index
@@ -51,7 +51,7 @@ fun RecipeDetailContent(
             .verticalScroll(rememberScrollState())
     ) {
         // Recipe Image - Add cache-busting parameter using updatedAt timestamp
-        val imageUrl = "${BuildConfig.BASE_URL}/api/media/recipes/${recipe.id}/images/original.webp" +
+        val imageUrl = "$baseUrl/api/media/recipes/${recipe.id}/images/original.webp" +
                 if (recipe.updatedAt != null) "?v=${recipe.updatedAt}" else ""
         AsyncImage(
             model = imageUrl,
@@ -140,7 +140,7 @@ fun RecipeDetailContent(
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                            verticalArrangement = Arrangement.spacedBy(12.dp) // Tighter spacing
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,

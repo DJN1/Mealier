@@ -36,7 +36,7 @@ class ViewModelFactory(
             }
 
             modelClass.isAssignableFrom(RecipeViewModel::class.java) -> {
-                RecipeViewModel(recipeRepository) as T
+                RecipeViewModel(recipeRepository, serverPreferences) as T
             }
 
             modelClass.isAssignableFrom(AddRecipeViewModel::class.java) -> {
