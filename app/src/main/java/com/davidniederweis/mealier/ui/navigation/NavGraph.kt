@@ -9,7 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.davidniederweis.mealier.ui.screens.admin.AdminPlaceholderScreen
+import com.davidniederweis.mealier.ui.screens.admin.* 
 import com.davidniederweis.mealier.ui.screens.auth.LoginScreen
 import com.davidniederweis.mealier.ui.screens.home.HomeScreen
 import com.davidniederweis.mealier.ui.screens.profile.ProfileScreen
@@ -153,12 +153,44 @@ fun NavGraph(
             )
         }
 
-        // Admin Screen (placeholder for now)
+        // Admin Screen
         composable(Screen.Admin.route) {
-            AdminPlaceholderScreen(
-                navController = navController,
-                isAdmin = isAdmin
-            )
+            AdminScreen(navController = navController)
+        }
+
+        // Data Management Screen
+        composable(Screen.DataManagement.route) {
+            DataManagementScreen(navController = navController)
+        }
+
+        // Food Management Screen
+        composable(Screen.FoodManagement.route) {
+            FoodManagementScreen(navController = navController)
+        }
+
+        // Group Management Screen
+        composable(Screen.GroupManagement.route) {
+            GroupManagementScreen(navController = navController)
+        }
+
+        // Cookbook Management Screen
+        composable(Screen.CookbookManagement.route) {
+            CookbookManagementScreen(navController = navController)
+        }
+
+        // Unit Management Screen
+        composable(Screen.UnitManagement.route) {
+            UnitManagementScreen(navController = navController)
+        }
+
+        // Tag Management Screen
+        composable(Screen.TagManagement.route) {
+            TagManagementScreen(navController = navController)
+        }
+
+        // User Management Screen
+        composable(Screen.UserManagement.route) {
+            UserManagementScreen(navController = navController)
         }
     }
 }

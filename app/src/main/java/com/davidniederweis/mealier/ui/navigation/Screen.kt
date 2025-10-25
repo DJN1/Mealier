@@ -14,4 +14,11 @@ sealed class Screen(val route: String) {
         fun createRoute(slug: String) = "edit_recipe/$slug"
     }
     object Admin : Screen("admin")
+    object DataManagement : Screen("data_management")
+    object FoodManagement : Screen("food_management")
+    object GroupManagement : Screen("group_management")
+    object CookbookManagement : Screen("cookbook_management")
+    object UnitManagement : Screen("unit_management")
+    object TagManagement : Screen("tag_management")
+    object UserManagement : Screen("user_management")
 }

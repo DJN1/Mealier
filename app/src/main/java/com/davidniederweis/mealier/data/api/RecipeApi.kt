@@ -4,6 +4,9 @@ import com.davidniederweis.mealier.data.model.food.CreateFoodRequest
 import com.davidniederweis.mealier.data.model.food.Food
 import com.davidniederweis.mealier.data.model.food.FoodListResponse
 import com.davidniederweis.mealier.data.model.recipe.*
+import com.davidniederweis.mealier.data.model.tag.CreateTagRequest
+import com.davidniederweis.mealier.data.model.tag.Tag
+import com.davidniederweis.mealier.data.model.tag.TagListResponse
 import com.davidniederweis.mealier.data.model.unit.CreateUnitRequest
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
 import com.davidniederweis.mealier.data.model.unit.UnitListResponse
@@ -69,6 +72,14 @@ interface RecipeApi {
     @POST("api/units")
     suspend fun createUnit(@Body request: CreateUnitRequest): RecipeUnit
 
+    // Update unit
+    @PUT("api/units/{id}")
+    suspend fun updateUnit(@Path("id") id: String, @Body request: CreateUnitRequest): RecipeUnit
+
+    // Delete unit
+    @DELETE("api/units/{id}")
+    suspend fun deleteUnit(@Path("id") id: String)
+
     // Get all foods
     @GET("api/foods")
     suspend fun getFoods(
@@ -79,4 +90,27 @@ interface RecipeApi {
     // Create new food
     @POST("api/foods")
     suspend fun createFood(@Body request: CreateFoodRequest): Food
+
+    // Delete food
+    @DELETE("api/foods/{id}")
+    suspend fun deleteFood(@Path("id") id: String)
+
+    // Get all tags
+    @GET("api/organizers/tags")
+    suspend fun getTags(
+        @Query("page") page: Int = 1,
+        @Query("perPage") perPage: Int = -1
+    ): TagListResponse
+
+    // Create new tag
+    @POST("api/organizers/tags")
+    suspend fun createTag(@Body request: CreateTagRequest): Tag
+
+    // Update tag
+    @PUT("api/organizers/tags/{id}")
+    suspend fun updateTag(@Path("id") id: String, @Body tag: Tag): Tag
+
+    // Delete tag
+    @DELETE("api/organizers/tags/{id}")
+    suspend fun deleteTag(@Path("id") id: String)
 }

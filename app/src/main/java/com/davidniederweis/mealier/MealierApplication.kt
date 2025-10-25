@@ -7,6 +7,8 @@ import com.davidniederweis.mealier.data.preferences.ServerPreferences
 import com.davidniederweis.mealier.data.preferences.ThemePreferences
 import com.davidniederweis.mealier.data.repository.AuthRepository
 import com.davidniederweis.mealier.data.repository.RecipeRepository
+import com.davidniederweis.mealier.data.repository.UserRepository
+import com.davidniederweis.mealier.data.repository.UserRepositoryImpl
 import com.davidniederweis.mealier.data.security.SecureDataStoreManager
 import com.davidniederweis.mealier.ui.viewmodel.ViewModelFactory
 
@@ -22,6 +24,7 @@ class MealierApplication : Application() {
         AuthRepository(apiClient.authApi, secureDataStore)
     }
     private val recipeRepository by lazy { RecipeRepository(apiClient.recipeApi) }
+    private val userRepository: UserRepository by lazy { UserRepositoryImpl(apiClient.userApi) }
 
     // ViewModel factory
     val viewModelFactory by lazy {
@@ -30,6 +33,7 @@ class MealierApplication : Application() {
             userApi = apiClient.userApi,
             tokenManager = secureDataStore,
             recipeRepository = recipeRepository,
+            userRepository = userRepository,
             themePreferences = themePreferences,
             biometricsPreferences = biometricsPreferences,
             serverPreferences = serverPreferences

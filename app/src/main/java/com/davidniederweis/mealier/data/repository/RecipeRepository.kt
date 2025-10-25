@@ -4,6 +4,8 @@ import com.davidniederweis.mealier.data.api.RecipeApi
 import com.davidniederweis.mealier.data.model.food.CreateFoodRequest
 import com.davidniederweis.mealier.data.model.food.Food
 import com.davidniederweis.mealier.data.model.recipe.*
+import com.davidniederweis.mealier.data.model.tag.CreateTagRequest
+import com.davidniederweis.mealier.data.model.tag.Tag
 import com.davidniederweis.mealier.data.model.unit.CreateUnitRequest
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
 import com.davidniederweis.mealier.util.Logger
@@ -73,6 +75,31 @@ class RecipeRepository(
         }
     }
 
+    // Update new unit
+    suspend fun updateUnit(id: String, request: CreateUnitRequest): RecipeUnit {
+        return try {
+            Logger.d("RecipeRepository", "Updating unit: ${request.name}")
+            val unit = recipeApi.updateUnit(id, request)
+            Logger.i("RecipeRepository", "Successfully updated unit: ${unit.name}")
+            unit
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error updating unit: ${e.message}", e)
+            throw e
+        }
+    }
+
+    // Delete unit
+    suspend fun deleteUnit(id: String) {
+        try {
+            Logger.d("RecipeRepository", "Deleting unit: $id")
+            recipeApi.deleteUnit(id)
+            Logger.i("RecipeRepository", "Successfully deleted unit: $id")
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error deleting unit: ${e.message}", e)
+            throw e
+        }
+    }
+
     // Get all foods
     suspend fun getFoods(): List<Food> {
         return try {
@@ -95,6 +122,69 @@ class RecipeRepository(
             food
         } catch (e: Exception) {
             Logger.e("RecipeRepository", "Error creating food: ${e.message}", e)
+            throw e
+        }
+    }
+
+    // Delete food
+    suspend fun deleteFood(id: String) {
+        try {
+            Logger.d("RecipeRepository", "Deleting food: $id")
+            recipeApi.deleteFood(id)
+            Logger.i("RecipeRepository", "Successfully deleted food: $id")
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error deleting food: ${e.message}", e)
+            throw e
+        }
+    }
+
+    // Get all tags
+    suspend fun getTags(): List<Tag> {
+        return try {
+            Logger.d("RecipeRepository", "Fetching tags")
+            val response = recipeApi.getTags()
+            Logger.i("RecipeRepository", "Successfully fetched ${response.items.size} tags")
+            response.items
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error fetching tags: ${e.message}", e)
+            throw e
+        }
+    }
+
+    // Create new tag
+    suspend fun createTag(request: CreateTagRequest): Tag {
+        return try {
+            Logger.d("RecipeRepository", "Creating tag: ${request.name}")
+            val tag = recipeApi.createTag(request)
+            Logger.i("RecipeRepository", "Successfully created tag: ${tag.name}")
+            tag
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error creating tag: ${e.message}", e)
+            throw e
+        }
+    }
+
+    // Update new tag
+    suspend fun updateTag(id: String, request: Tag): Tag {
+        return try {
+            Logger.d("RecipeRepository", "Updating tag: ${request.name}")
+            val tag = recipeApi.updateTag(id, request)
+            Logger.i("RecipeRepository", "Successfully updated tag: ${tag.name}")
+            tag
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error updating tag: ${e.message}", e)
+            throw e
+        }
+    }
+
+    // Delete tag
+    suspend fun deleteTag(id: String) {
+        try {
+            Logger.d("RecipeRepository", "Deleting tag: $id")
+            recipeApi.deleteTag(id)
+            Logger.i("RecipeRepository", "Successfully deleted tag: $id")
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error deleting tag: ${e.message}", e)
             throw e
         }
     }

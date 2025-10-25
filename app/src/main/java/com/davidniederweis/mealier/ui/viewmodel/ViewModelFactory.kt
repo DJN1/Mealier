@@ -8,7 +8,13 @@ import com.davidniederweis.mealier.data.preferences.ServerPreferences
 import com.davidniederweis.mealier.data.preferences.ThemePreferences
 import com.davidniederweis.mealier.data.repository.AuthRepository
 import com.davidniederweis.mealier.data.repository.RecipeRepository
+import com.davidniederweis.mealier.data.repository.UserRepository
 import com.davidniederweis.mealier.data.security.SecureDataStoreManager
+import com.davidniederweis.mealier.ui.viewmodel.admin.CookbookManagementViewModel
+import com.davidniederweis.mealier.ui.viewmodel.admin.FoodManagementViewModel
+import com.davidniederweis.mealier.ui.viewmodel.admin.TagManagementViewModel
+import com.davidniederweis.mealier.ui.viewmodel.admin.UnitManagementViewModel
+import com.davidniederweis.mealier.ui.viewmodel.admin.UserManagementViewModel
 import com.davidniederweis.mealier.ui.viewmodel.auth.AuthViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.BiometricsViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.ServerViewModel
@@ -23,6 +29,7 @@ class ViewModelFactory(
     private val userApi: UserApi,
     private val tokenManager: SecureDataStoreManager,
     private val recipeRepository: RecipeRepository,
+    private val userRepository: UserRepository,
     private val themePreferences: ThemePreferences,
     private val biometricsPreferences: BiometricsPreferences,
     private val serverPreferences: ServerPreferences,
@@ -61,6 +68,26 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(ServerViewModel::class.java) -> {
                 ServerViewModel(serverPreferences) as T
+            }
+
+            modelClass.isAssignableFrom(FoodManagementViewModel::class.java) -> {
+                FoodManagementViewModel(recipeRepository) as T
+            }
+
+            modelClass.isAssignableFrom(UnitManagementViewModel::class.java) -> {
+                UnitManagementViewModel(recipeRepository) as T
+            }
+
+            modelClass.isAssignableFrom(TagManagementViewModel::class.java) -> {
+                TagManagementViewModel(recipeRepository) as T
+            }
+
+            modelClass.isAssignableFrom(CookbookManagementViewModel::class.java) -> {
+                CookbookManagementViewModel(recipeRepository) as T
+            }
+
+            modelClass.isAssignableFrom(UserManagementViewModel::class.java) -> {
+                UserManagementViewModel(userRepository) as T
             }
 
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
