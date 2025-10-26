@@ -1,13 +1,19 @@
 package com.davidniederweis.mealier.data.repository
 
 import com.davidniederweis.mealier.data.api.RecipeApi
+import com.davidniederweis.mealier.data.model.category.Category
+import com.davidniederweis.mealier.data.model.cookbook.Cookbook
+import com.davidniederweis.mealier.data.model.cookbook.UpdateCookbook
 import com.davidniederweis.mealier.data.model.food.CreateFoodRequest
 import com.davidniederweis.mealier.data.model.food.Food
+import com.davidniederweis.mealier.data.model.household.Household
 import com.davidniederweis.mealier.data.model.recipe.*
 import com.davidniederweis.mealier.data.model.tag.CreateTagRequest
 import com.davidniederweis.mealier.data.model.tag.Tag
+import com.davidniederweis.mealier.data.model.tool.Tool
 import com.davidniederweis.mealier.data.model.unit.CreateUnitRequest
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
+import com.davidniederweis.mealier.data.models.CreateCookBook
 import com.davidniederweis.mealier.util.Logger
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -22,12 +28,20 @@ class RecipeRepository(
     suspend fun getAllRecipes(
         page: Int = 1,
         perPage: Int = 50,
-        search: String? = null
+        search: String? = null,
+        cookbookSlug: String? = null,
+        orderBy: String? = null,
+        orderDirection: String? = null,
+        orderByNullPosition: String? = null
     ): List<RecipeSummary> {
         return recipeApi.getRecipes(
             page = page,
             perPage = perPage,
-            search = search
+            search = search,
+            cookbookSlug = cookbookSlug,
+            orderBy = orderBy,
+            orderDirection = orderDirection,
+            orderByNullPosition = orderByNullPosition
         ).items
     }
 
@@ -45,6 +59,39 @@ class RecipeRepository(
             perPage = perPage,
             search = query
         ).items
+    }
+
+    suspend fun getRecipesByCookbook(cookbookSlug: String): List<RecipeSummary> {
+        return getAllRecipes(
+            cookbookSlug = cookbookSlug,
+            orderBy = "name",
+            orderDirection = "asc",
+            orderByNullPosition = "first"
+        )
+    }
+
+    suspend fun getCookbooks(): List<Cookbook> {
+        return try {
+            Logger.d("RecipeRepository", "Fetching cookbooks")
+            val response = recipeApi.getCookbooks()
+            Logger.i("RecipeRepository", "Successfully fetched ${response.items.size} cookbooks")
+            response.items
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error fetching cookbooks: ${e.message}", e)
+            throw e
+        }
+    }
+
+    suspend fun getCookbook(id: String): Cookbook {
+        return try {
+            Logger.d("RecipeRepository", "Fetching cookbook with id: $id")
+            val cookbook = recipeApi.getCookbook(id)
+            Logger.i("RecipeRepository", "Successfully fetched cookbook with id: $id")
+            cookbook
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error fetching cookbook with id: $id, ${e.message}", e)
+            throw e
+        }
     }
 
     // New methods for recipe creation
@@ -189,6 +236,64 @@ class RecipeRepository(
         }
     }
 
+    suspend fun getCategories(): List<Category> {
+        return try {
+            Logger.d("RecipeRepository", "Fetching categories")
+            val response = recipeApi.getCategories()
+            Logger.i("RecipeRepository", "Successfully fetched ${response.items.size} categories")
+            response.items
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error fetching categories: ${e.message}", e)
+            throw e
+        }
+    }
+
+    suspend fun getTools(): List<Tool> {
+        return try {
+            Logger.d("RecipeRepository", "Fetching tools")
+            val response = recipeApi.getTools()
+            Logger.i("RecipeRepository", "Successfully fetched ${response.items.size} tools")
+            response.items
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error fetching tools: ${e.message}", e)
+            throw e
+        }
+    }
+
+    suspend fun getHouseholds(): List<Household> {
+        return try {
+            Logger.d("RecipeRepository", "Fetching households")
+            val response = recipeApi.getHouseholds()
+            Logger.i("RecipeRepository", "Successfully fetched ${response.items.size} households")
+            response.items
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error fetching households: ${e.message}", e)
+            throw e
+        }
+    }
+
+    suspend fun createCookbook(cookbook: CreateCookBook) {
+        try {
+            Logger.d("RecipeRepository", "Creating cookbook: ${cookbook.name}")
+            recipeApi.createCookbook(cookbook)
+            Logger.i("RecipeRepository", "Successfully created cookbook: ${cookbook.name}")
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error creating cookbook: ${e.message}", e)
+            throw e
+        }
+    }
+
+    suspend fun updateCookbook(id: String, cookbook: UpdateCookbook) {
+        try {
+            Logger.d("RecipeRepository", "Updating cookbook: ${cookbook.name}")
+            recipeApi.updateCookbook(id, cookbook)
+            Logger.i("RecipeRepository", "Successfully updated cookbook: ${cookbook.name}")
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error updating cookbook: ${e.message}", e)
+            throw e
+        }
+    }
+
     // Create recipe manually
     suspend fun createRecipe(request: CreateRecipeRequest): RecipeDetail {
         return try {
@@ -250,17 +355,17 @@ class RecipeRepository(
     suspend fun uploadRecipeImage(slug: String, imageFile: File): Boolean {
         return try {
             Logger.d("RecipeRepository", "Uploading image for recipe: $slug")
-            
+
             // Extract file extension
             val extension = imageFile.extension.lowercase()
             Logger.d("RecipeRepository", "Image extension: $extension")
-            
+
             val imageRequestBody = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
             val imagePart = MultipartBody.Part.createFormData("image", imageFile.name, imageRequestBody)
-            
+
             // Create extension as a form field
             val extensionRequestBody = extension.toRequestBody("text/plain".toMediaTypeOrNull())
-            
+
             recipeApi.uploadRecipeImage(slug, imagePart, extensionRequestBody)
             Logger.i("RecipeRepository", "Successfully uploaded image for recipe: $slug")
             true
@@ -275,7 +380,7 @@ class RecipeRepository(
         return try {
             Logger.d("RecipeRepository", "Uploading image from URL for recipe: $slug")
             Logger.d("RecipeRepository", "Image URL: $imageUrl")
-            
+
             val request = UploadImageFromUrlRequest(url = imageUrl)
             recipeApi.uploadRecipeImageFromUrl(slug, request)
             Logger.i("RecipeRepository", "Successfully uploaded image from URL for recipe: $slug")

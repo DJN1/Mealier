@@ -9,7 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.davidniederweis.mealier.ui.screens.admin.* 
+import com.davidniederweis.mealier.ui.screens.admin.*
 import com.davidniederweis.mealier.ui.screens.auth.LoginScreen
 import com.davidniederweis.mealier.ui.screens.home.HomeScreen
 import com.davidniederweis.mealier.ui.screens.profile.ProfileScreen
@@ -155,7 +155,7 @@ fun NavGraph(
 
         // Admin Screen
         composable(Screen.Admin.route) {
-            AdminScreen(navController = navController)
+            AdminScreen(navController = navController, isAdmin = isAdmin)
         }
 
         // Data Management Screen
@@ -178,6 +178,20 @@ fun NavGraph(
             CookbookManagementScreen(navController = navController)
         }
 
+        // Create Cookbook Screen
+        composable(Screen.CreateCookbook.route) {
+            CreateCookbookScreen(navController = navController)
+        }
+
+        // Edit Cookbook Screen
+        composable(
+            route = Screen.EditCookbook.route,
+            arguments = listOf(navArgument("id") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: return@composable
+            EditCookbookScreen(navController = navController, cookbookId = id)
+        }
+
         // Unit Management Screen
         composable(Screen.UnitManagement.route) {
             UnitManagementScreen(navController = navController)
@@ -191,6 +205,31 @@ fun NavGraph(
         // User Management Screen
         composable(Screen.UserManagement.route) {
             UserManagementScreen(navController = navController)
+        }
+
+        // Household Screen
+        composable(Screen.Household.route) {
+            HouseholdScreen(navController = navController)
+        }
+
+        // Household Settings Screen
+        composable(Screen.HouseholdSettings.route) {
+            HouseholdSettingsScreen(navController = navController)
+        }
+
+        // Members Screen
+        composable(Screen.Members.route) {
+            MembersScreen(navController = navController)
+        }
+
+        // Webhooks Screen
+        composable(Screen.Webhooks.route) {
+            WebhooksScreen(navController = navController)
+        }
+
+        // Notifiers Screen
+        composable(Screen.Notifiers.route) {
+            NotifiersScreen(navController = navController)
         }
     }
 }

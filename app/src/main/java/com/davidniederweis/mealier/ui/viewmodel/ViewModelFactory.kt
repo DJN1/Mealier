@@ -7,11 +7,16 @@ import com.davidniederweis.mealier.data.preferences.BiometricsPreferences
 import com.davidniederweis.mealier.data.preferences.ServerPreferences
 import com.davidniederweis.mealier.data.preferences.ThemePreferences
 import com.davidniederweis.mealier.data.repository.AuthRepository
+import com.davidniederweis.mealier.data.repository.HouseholdRepository
 import com.davidniederweis.mealier.data.repository.RecipeRepository
 import com.davidniederweis.mealier.data.repository.UserRepository
 import com.davidniederweis.mealier.data.security.SecureDataStoreManager
 import com.davidniederweis.mealier.ui.viewmodel.admin.CookbookManagementViewModel
+import com.davidniederweis.mealier.ui.viewmodel.admin.CreateCookbookViewModel
+import com.davidniederweis.mealier.ui.viewmodel.admin.EditCookbookViewModel
 import com.davidniederweis.mealier.ui.viewmodel.admin.FoodManagementViewModel
+import com.davidniederweis.mealier.ui.viewmodel.admin.HouseholdManagementViewModel
+import com.davidniederweis.mealier.ui.viewmodel.admin.HouseholdSettingsViewModel
 import com.davidniederweis.mealier.ui.viewmodel.admin.TagManagementViewModel
 import com.davidniederweis.mealier.ui.viewmodel.admin.UnitManagementViewModel
 import com.davidniederweis.mealier.ui.viewmodel.admin.UserManagementViewModel
@@ -30,6 +35,7 @@ class ViewModelFactory(
     private val tokenManager: SecureDataStoreManager,
     private val recipeRepository: RecipeRepository,
     private val userRepository: UserRepository,
+    private val householdRepository: HouseholdRepository,
     private val themePreferences: ThemePreferences,
     private val biometricsPreferences: BiometricsPreferences,
     private val serverPreferences: ServerPreferences,
@@ -88,6 +94,22 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(UserManagementViewModel::class.java) -> {
                 UserManagementViewModel(userRepository) as T
+            }
+
+            modelClass.isAssignableFrom(HouseholdManagementViewModel::class.java) -> {
+                HouseholdManagementViewModel(recipeRepository) as T
+            }
+
+            modelClass.isAssignableFrom(HouseholdSettingsViewModel::class.java) -> {
+                HouseholdSettingsViewModel(householdRepository) as T
+            }
+
+            modelClass.isAssignableFrom(CreateCookbookViewModel::class.java) -> {
+                CreateCookbookViewModel(recipeRepository) as T
+            }
+
+            modelClass.isAssignableFrom(EditCookbookViewModel::class.java) -> {
+                EditCookbookViewModel(recipeRepository) as T
             }
 
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

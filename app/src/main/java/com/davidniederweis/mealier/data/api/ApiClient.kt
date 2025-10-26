@@ -178,6 +178,10 @@ class ApiClient(
     val userApi: UserApi by lazy {
         retrofit.create(UserApi::class.java)
     }
+
+    val householdApi: HouseholdApi by lazy {
+        retrofit.create(HouseholdApi::class.java)
+    }
     
     // Expose authApi for repository use
 //    fun getAuthApi(): AuthApi = authApi

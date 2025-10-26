@@ -1,24 +1,41 @@
 package com.davidniederweis.mealier.ui.screens.admin
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.SortByAlpha
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.davidniederweis.mealier.data.model.recipe.RecipeSummary
 import com.davidniederweis.mealier.ui.navigation.Screen
-import com.davidniederweis.mealier.ui.viewmodel.admin.CookbookManagementState
 import com.davidniederweis.mealier.ui.viewmodel.admin.CookbookManagementViewModel
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 
@@ -28,14 +45,11 @@ fun CookbookManagementScreen(
     navController: NavController,
     viewModel: CookbookManagementViewModel = appViewModel()
 ) {
-    val state by viewModel.cookbookManagementState.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var selectedRecipe by remember { mutableStateOf<RecipeSummary?>(null) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    val cookbooks by viewModel.cookbooks.collectAsState()
+    var hideCookbooks by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.getRecipes()
+    LaunchedEffect(navController.currentBackStackEntry) {
+        viewModel.getCookbooks()
     }
 
     Scaffold(
@@ -49,14 +63,6 @@ fun CookbookManagementScreen(
                             contentDescription = "Back"
                         )
                     }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.toggleSort() }) {
-                        Icon(
-                            imageVector = Icons.Default.SortByAlpha,
-                            contentDescription = "Sort"
-                        )
-                    }
                 }
             )
         }
@@ -65,106 +71,34 @@ fun CookbookManagementScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.search(it) },
-                label = { Text("Search") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.search("") }) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "Clear Search"
-                            )
-                        }
-                    }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(onClick = { navController.navigate(Screen.CreateCookbook.route) }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Create")
+                    Text("Create")
                 }
-            )
-
-            when (val currentState = state) {
-                is CookbookManagementState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = hideCookbooks, onCheckedChange = { hideCookbooks = it })
+                    Text("Hide Cookbooks from Other Households")
                 }
-                is CookbookManagementState.Success -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(vertical = 8.dp)
-                    ) {
-                        items(currentState.recipes) { recipe ->
-                            ListItem(
-                                headlineContent = { Text(recipe.name ?: "") },
-                                modifier = Modifier.clickable {
-                                    selectedRecipe = recipe
-                                    showBottomSheet = true
-                                }
-                            )
-                        }
-                    }
-                }
-                is CookbookManagementState.Error -> {
-                    Text(
-                        text = currentState.message,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            HorizontalDivider()
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(cookbooks) { cookbook ->
+                    ListItem(
+                        headlineContent = { Text(cookbook.name) },
+                        supportingContent = { Text(cookbook.description) },
+                        modifier = Modifier.clickable { navController.navigate(Screen.EditCookbook.createRoute(cookbook.id)) }
                     )
                 }
-                is CookbookManagementState.Idle -> {
-                    // Do nothing
-                }
             }
         }
-    }
-
-    if (showBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showBottomSheet = false }
-        ) {
-            ListItem(
-                headlineContent = { Text("Edit") },
-                leadingContent = {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit")
-                },
-                modifier = Modifier.clickable {
-                    showBottomSheet = false
-                    selectedRecipe?.slug?.let { navController.navigate(Screen.EditRecipe.createRoute(it)) }
-                }
-            )
-            ListItem(
-                headlineContent = { Text("Delete") },
-                leadingContent = {
-                    Icon(Icons.Default.Delete, contentDescription = "Delete")
-                },
-                modifier = Modifier.clickable {
-                    showBottomSheet = false
-                    showDeleteDialog = true
-                }
-            )
-        }
-    }
-
-    if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Recipe") },
-            text = { Text("Are you sure you want to delete this recipe?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        selectedRecipe?.slug?.let { viewModel.deleteRecipe(it) }
-                        showDeleteDialog = false
-                        selectedRecipe = null
-                    }
-                ) {
-                    Text("Delete")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }

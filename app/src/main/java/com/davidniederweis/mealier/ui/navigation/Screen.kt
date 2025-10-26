@@ -18,7 +18,16 @@ sealed class Screen(val route: String) {
     object FoodManagement : Screen("food_management")
     object GroupManagement : Screen("group_management")
     object CookbookManagement : Screen("cookbook_management")
+    object CreateCookbook : Screen("create_cookbook")
+    object EditCookbook : Screen("edit_cookbook/{id}") {
+        fun createRoute(id: String) = "edit_cookbook/$id"
+    }
     object UnitManagement : Screen("unit_management")
     object TagManagement : Screen("tag_management")
     object UserManagement : Screen("user_management")
+    object Household : Screen("household")
+    object HouseholdSettings : Screen("household_settings")
+    object Members : Screen("members")
+    object Webhooks : Screen("webhooks")
+    object Notifiers : Screen("notifiers")
 }

@@ -70,6 +70,22 @@ class RecipeViewModel(
         }
     }
 
+    fun loadRecipesByCookbook(cookbookSlug: String) {
+        viewModelScope.launch {
+            _recipeListState.value = RecipeListState.Loading
+            try {
+                val recipes = repository.getRecipesByCookbook(cookbookSlug)
+                _recipeListState.value = RecipeListState.Success(recipes)
+            } catch (e: Exception) {
+                _recipeListState.value = RecipeListState.Error(e.message ?: "Failed to load cookbook recipes")
+            }
+        }
+    }
+
+    fun clearRecipes() {
+        _recipeListState.value = RecipeListState.Success(emptyList())
+    }
+
     fun loadMoreRecipes() {
         if (isLoadingMore) return
 
