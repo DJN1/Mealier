@@ -21,7 +21,7 @@ class MealierApplication : Application() {
     private val themePreferences by lazy { ThemePreferences(this) }
     private val biometricsPreferences by lazy { BiometricsPreferences(this) }
     private val serverPreferences by lazy { ServerPreferences(this) }
-    private val apiClient by lazy { ApiClient(secureDataStore, biometricsPreferences, serverPreferences) }
+    private val apiClient by lazy { ApiClient(secureDataStore, serverPreferences) }
     private val authRepository by lazy {
         AuthRepository(apiClient.authApi, secureDataStore)
     }

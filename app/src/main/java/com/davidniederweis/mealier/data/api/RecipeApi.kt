@@ -27,11 +27,19 @@ interface RecipeApi {
     suspend fun getRecipes(
         @Query("page") page: Int = 1,
         @Query("perPage") perPage: Int = 50,
-        @Query("search") search: String? = null,
-        @Query("cookbook") cookbookSlug: String? = null,
         @Query("orderBy") orderBy: String? = null,
         @Query("orderDirection") orderDirection: String? = null,
-        @Query("orderByNullPosition") orderByNullPosition: String? = null
+        @Query("orderByNullPosition") orderByNullPosition: String? = null,
+        @Query("search") search: String? = null,
+        @Query("categories") categories: String? = null,
+        @Query("tags") tags: String? = null,
+        @Query("tools") tools: String? = null,
+        @Query("foods") foods: String? = null,
+        @Query("cookbook") cookbookSlug: String? = null,
+        @Query("requireAllCategories") requireAllCategories: Boolean = false,
+        @Query("requireAllTags") requireAllTags: Boolean = false,
+        @Query("requireAllTools") requireAllTools: Boolean = false,
+        @Query("requireAllFoods") requireAllFoods: Boolean = false
     ): RecipeListResponse
 
     @GET("api/recipes/{slug}")

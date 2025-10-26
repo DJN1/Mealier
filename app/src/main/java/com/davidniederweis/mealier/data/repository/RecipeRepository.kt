@@ -28,20 +28,36 @@ class RecipeRepository(
     suspend fun getAllRecipes(
         page: Int = 1,
         perPage: Int = 50,
-        search: String? = null,
-        cookbookSlug: String? = null,
         orderBy: String? = null,
         orderDirection: String? = null,
-        orderByNullPosition: String? = null
+        orderByNullPosition: String? = null,
+        search: String? = null,
+        categories: String? = null,
+        tags: String? = null,
+        tools: String? = null,
+        foods: String? = null,
+        cookbookSlug: String? = null,
+        requireAllCategories: Boolean = false,
+        requireAllTags: Boolean = false,
+        requireAllTools: Boolean = false,
+        requireAllFoods: Boolean = false
     ): List<RecipeSummary> {
         return recipeApi.getRecipes(
             page = page,
             perPage = perPage,
-            search = search,
-            cookbookSlug = cookbookSlug,
             orderBy = orderBy,
             orderDirection = orderDirection,
-            orderByNullPosition = orderByNullPosition
+            orderByNullPosition = orderByNullPosition,
+            search = search,
+            categories = categories,
+            tags = tags,
+            tools = tools,
+            foods = foods,
+            cookbookSlug = cookbookSlug,
+            requireAllCategories = requireAllCategories,
+            requireAllTags = requireAllTags,
+            requireAllTools = requireAllTools,
+            requireAllFoods = requireAllFoods
         ).items
     }
 

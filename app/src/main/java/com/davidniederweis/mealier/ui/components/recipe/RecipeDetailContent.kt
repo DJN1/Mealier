@@ -1,12 +1,13 @@
 package com.davidniederweis.mealier.ui.components.recipe
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,9 +17,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.davidniederweis.mealier.data.model.recipe.RecipeDetail
+import com.davidniederweis.mealier.data.model.recipe.RecipeCategory
+import com.davidniederweis.mealier.data.model.recipe.RecipeTag
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun RecipeDetailContent(
     recipe: RecipeDetail,
@@ -29,17 +34,17 @@ fun RecipeDetailContent(
     val gatheredIngredients = remember { mutableStateSetOf<Int>() }
     // Track completed instructions by their index
     val completedInstructions = remember { mutableStateSetOf<Int>() }
-    
+
     // Track current servings count for scaling ingredients
-    var currentServings by remember { mutableStateOf(recipe.recipeServings) }
-    
+    var currentServings by remember { mutableDoubleStateOf(recipe.recipeServings.toDouble()) }
+
     // Calculate servings multiplier from current servings
     val servingsMultiplier = if (recipe.recipeServings > 0) {
         currentServings / recipe.recipeServings
     } else {
         1.0
     }
-    
+
     // Check if recipe has parsed ingredients (can be scaled)
     val hasParsedIngredients = remember(recipe) {
         recipe.recipeIngredient.any { it.unit != null && it.food != null }
@@ -81,6 +86,49 @@ fun RecipeDetailContent(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+
+            // Tags and Categories
+            if (!recipe.recipeCategory.isNullOrEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Categories", style = MaterialTheme.typography.titleMedium)
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        recipe.recipeCategory?.forEach { category: RecipeCategory ->
+                            AssistChip(
+                                onClick = { /* Disabled */ },
+                                label = { Text(category.name) },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (!recipe.tags.isNullOrEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Tags", style = MaterialTheme.typography.titleMedium)
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        recipe.tags?.forEach { tag: RecipeTag ->
+                            AssistChip(
+                                onClick = { /* Disabled */ },
+                                label = { Text(tag.name) },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                            )
+                        }
+                    }
+                }
             }
 
             // Recipe Info Cards
@@ -266,12 +314,12 @@ fun RecipeDetailContent(
             // View Original Recipe Button (only for imported recipes)
             recipe.orgURL?.let { originalUrl ->
                 if (originalUrl.isNotBlank()) {
-                    val context = androidx.compose.ui.platform.LocalContext.current
+                    val context = LocalContext.current
                     OutlinedButton(
                         onClick = {
-                            val intent = android.content.Intent(
-                                android.content.Intent.ACTION_VIEW,
-                                android.net.Uri.parse(originalUrl)
+                            val intent = Intent(
+                                Intent.ACTION_VIEW,
+                                originalUrl.toUri()
                             )
                             context.startActivity(intent)
                         },

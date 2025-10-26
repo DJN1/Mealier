@@ -26,6 +26,7 @@ import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
 import com.davidniederweis.mealier.ui.components.general.EmptyState
 import com.davidniederweis.mealier.ui.components.general.ErrorMessage
 import com.davidniederweis.mealier.ui.components.general.LoadingBox
+import com.davidniederweis.mealier.ui.components.recipe.FilterDialog
 import com.davidniederweis.mealier.ui.components.recipe.RecipeCard
 import com.davidniederweis.mealier.ui.components.layout.RecipeSearchBar
 import com.davidniederweis.mealier.ui.components.layout.adaptiveGridCells
@@ -47,11 +48,16 @@ fun HomeScreen(
     val recipeListState by viewModel.recipeListState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val baseUrl by viewModel.baseUrl.collectAsState()
+    val categories by viewModel.allCategories.collectAsState()
+    val tags by viewModel.allTags.collectAsState()
     val listState = rememberLazyGridState()
 
     var isRefreshing by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var showFilterDialog by remember { mutableStateOf(false) }
     var selectedCookbook by remember { mutableStateOf<Cookbook?>(null) }
+    var selectedCategoryIds by remember { mutableStateOf(listOf<String>()) }
+    var selectedTagIds by remember { mutableStateOf(listOf<String>()) }
 
     // Handle refresh state
     LaunchedEffect(recipeListState) {
@@ -66,12 +72,28 @@ fun HomeScreen(
     LaunchedEffect(pagerState.currentPage) {
         viewModel.clearRecipes()
         if (pagerState.currentPage == 0) {
-            viewModel.loadRecipes()
+            viewModel.loadRecipes(categoryIds = selectedCategoryIds, tagIds = selectedTagIds)
         } else {
             selectedCookbook?.let {
                 viewModel.loadRecipesByCookbook(it.slug)
             }
         }
+    }
+
+    if (showFilterDialog) {
+        FilterDialog(
+            categories = categories,
+            tags = tags,
+            initialSelectedCategoryIds = selectedCategoryIds,
+            initialSelectedTagIds = selectedTagIds,
+            onDismiss = { showFilterDialog = false },
+            onApply = { newSelectedCategories, newSelectedTags ->
+                selectedCategoryIds = newSelectedCategories
+                selectedTagIds = newSelectedTags
+                viewModel.loadRecipes(refresh = true, categoryIds = selectedCategoryIds, tagIds = selectedTagIds)
+                showFilterDialog = false
+            }
+        )
     }
 
     Scaffold(
@@ -93,11 +115,13 @@ fun HomeScreen(
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.weight(1f)
                     )
-                    IconButton(onClick = { /* TODO: Open filter */ }) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = "Filter"
-                        )
+                    if (pagerState.currentPage == 0) {
+                        IconButton(onClick = { showFilterDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.FilterList,
+                                contentDescription = "Filter"
+                            )
+                        }
                     }
                 }
                 if (pagerState.currentPage == 0) {
@@ -159,7 +183,7 @@ fun HomeScreen(
                         isRefreshing = isRefreshing,
                         onRefresh = {
                             isRefreshing = true
-                            viewModel.loadRecipes(refresh = true)
+                            viewModel.loadRecipes(refresh = true, categoryIds = selectedCategoryIds, tagIds = selectedTagIds)
                         },
                         modifier = Modifier.fillMaxSize()
                     ) {

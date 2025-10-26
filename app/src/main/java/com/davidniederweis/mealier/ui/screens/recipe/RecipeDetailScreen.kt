@@ -13,11 +13,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.davidniederweis.mealier.BuildConfig
-import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
+import com.davidniederweis.mealier.data.model.category.Category
+import com.davidniederweis.mealier.data.model.recipe.RecipeCategory
+import com.davidniederweis.mealier.data.model.recipe.RecipeTag
+import com.davidniederweis.mealier.data.model.tag.Tag
 import com.davidniederweis.mealier.ui.components.general.ErrorMessage
 import com.davidniederweis.mealier.ui.components.general.LoadingBox
+import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
 import com.davidniederweis.mealier.ui.components.recipe.RecipeDetailContent
 import com.davidniederweis.mealier.ui.navigation.Screen
+import com.davidniederweis.mealier.ui.screens.recipe.EditRecipeTagsAndCategoriesSheet
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeDetailState
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeViewModel
@@ -37,6 +42,7 @@ fun RecipeDetailScreen(
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
     var deleteError by remember { mutableStateOf<String?>(null) }
+    var showEditTagsAndCategoriesSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(slug) {
         viewModel.loadRecipeDetail(slug)
@@ -100,6 +106,15 @@ fun RecipeDetailScreen(
                                 imageVector = Icons.Default.FavoriteBorder,
                                 contentDescription = "Favorite"
                             )
+                        }
+                        // Edit tags and categories button (admin only)
+                        if (isAdmin) {
+                            IconButton(onClick = { showEditTagsAndCategoriesSheet = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit Tags and Categories"
+                                )
+                            }
                         }
                         // Delete button (admin only)
                         if (isAdmin) {
@@ -214,5 +229,29 @@ fun RecipeDetailScreen(
                 }
             }
         )
+    }
+
+    if (showEditTagsAndCategoriesSheet) {
+        val state = recipeDetailState as? RecipeDetailState.Success
+        if (state != null) {
+            val allTags by viewModel.allTags.collectAsState()
+            val allCategories by viewModel.allCategories.collectAsState()
+
+            EditRecipeTagsAndCategoriesSheet(
+                recipeTags = state.recipe.tags ?: emptyList(),
+                recipeCategories = state.recipe.recipeCategory ?: emptyList(),
+                allTags = allTags.map { RecipeTag(it.id, it.name, it.name.lowercase().replace(" ", "-")) },
+                allCategories = allCategories.map { RecipeCategory(it.id, it.name, it.slug) },
+                onTagsChange = { recipeTags ->
+                    viewModel.updateRecipeTags(recipeTags.map { Tag(it.id, it.name) })
+                },
+                onCategoriesChange = { recipeCategories ->
+                    viewModel.updateRecipeCategories(recipeCategories.mapNotNull { recipeCategory ->
+                        recipeCategory.id?.let { Category(it, recipeCategory.name, recipeCategory.slug) }
+                    })
+                },
+                onDismiss = { showEditTagsAndCategoriesSheet = false }
+            )
+        }
     }
 }

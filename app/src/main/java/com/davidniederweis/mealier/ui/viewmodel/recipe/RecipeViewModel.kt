@@ -3,7 +3,11 @@ package com.davidniederweis.mealier.ui.viewmodel.recipe
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.davidniederweis.mealier.BuildConfig
+import com.davidniederweis.mealier.data.model.category.Category
+import com.davidniederweis.mealier.data.model.recipe.RecipeCategory
 import com.davidniederweis.mealier.data.model.recipe.RecipeSummary
+import com.davidniederweis.mealier.data.model.recipe.RecipeTag
+import com.davidniederweis.mealier.data.model.tag.Tag
 import com.davidniederweis.mealier.data.preferences.ServerPreferences
 import com.davidniederweis.mealier.data.repository.RecipeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +32,12 @@ class RecipeViewModel(
     private val _baseUrl = MutableStateFlow("")
     val baseUrl: StateFlow<String> = _baseUrl.asStateFlow()
 
+    private val _allCategories = MutableStateFlow<List<Category>>(emptyList())
+    val allCategories: StateFlow<List<Category>> = _allCategories.asStateFlow()
+
+    private val _allTags = MutableStateFlow<List<Tag>>(emptyList())
+    val allTags: StateFlow<List<Tag>> = _allTags.asStateFlow()
+
     private var currentPage = 1
     private val perPage = 50
     private var isLoadingMore = false
@@ -35,13 +45,29 @@ class RecipeViewModel(
 
     init {
         loadRecipes()
+        loadFilterData()
         viewModelScope.launch {
             val url = serverPreferences.getServerUrlOnce()
-            _baseUrl.value = if (url.isNotBlank()) url else BuildConfig.BASE_URL
+            _baseUrl.value = url.ifBlank { BuildConfig.BASE_URL }
         }
     }
 
-    fun loadRecipes(refresh: Boolean = false) {
+    private fun loadFilterData() {
+        viewModelScope.launch {
+            try {
+                _allCategories.value = repository.getCategories()
+                _allTags.value = repository.getTags()
+            } catch (_: Exception) {
+                // Handle error
+            }
+        }
+    }
+
+    fun loadRecipes(
+        refresh: Boolean = false,
+        categoryIds: List<String> = emptyList(),
+        tagIds: List<String> = emptyList()
+    ) {
         if (refresh) {
             currentPage = 1
             allRecipes.clear()
@@ -53,7 +79,9 @@ class RecipeViewModel(
                 val recipes = repository.getAllRecipes(
                     page = currentPage,
                     perPage = perPage,
-                    search = _searchQuery.value.ifBlank { null }
+                    search = _searchQuery.value.ifBlank { null },
+                    categories = categoryIds.joinToString(","),
+                    tags = tagIds.joinToString(",")
                 )
 
                 if (refresh) {
@@ -102,7 +130,7 @@ class RecipeViewModel(
 
                 allRecipes.addAll(recipes)
                 _recipeListState.value = RecipeListState.Success(allRecipes.toList())
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Don't change state on pagination error, just reset page
                 currentPage--
             } finally {
@@ -171,6 +199,26 @@ class RecipeViewModel(
             } catch (e: Exception) {
                 onError(e.message ?: "Failed to delete recipe")
             }
+        }
+    }
+
+    fun updateRecipeTags(tags: List<Tag>) {
+        val state = _recipeDetailState.value
+        if (state is RecipeDetailState.Success) {
+            val recipeTags = tags.map { RecipeTag(it.id, it.name, it.name.lowercase().replace(" ", "-")) }
+            val updatedRecipe = state.recipe.copy(tags = recipeTags)
+            // Here you would typically also make an API call to save the changes
+            _recipeDetailState.value = RecipeDetailState.Success(updatedRecipe)
+        }
+    }
+
+    fun updateRecipeCategories(categories: List<Category>) {
+        val state = _recipeDetailState.value
+        if (state is RecipeDetailState.Success) {
+            val recipeCategories = categories.map { RecipeCategory(it.id, it.name, it.name.lowercase().replace(" ", "-")) }
+            val updatedRecipe = state.recipe.copy(recipeCategory = recipeCategories)
+            // Here you would typically also make an API call to save the changes
+            _recipeDetailState.value = RecipeDetailState.Success(updatedRecipe)
         }
     }
 }

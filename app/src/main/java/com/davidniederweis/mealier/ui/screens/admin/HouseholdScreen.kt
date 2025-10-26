@@ -9,8 +9,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Webhook
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -100,46 +98,6 @@ fun HouseholdScreen(
                     },
                     modifier = Modifier.clickable {
                         navController.navigate(Screen.CookbookManagement.route)
-                    }
-                )
-            }
-            item {
-                ListItem(
-                    headlineContent = { Text("Webhooks") },
-                    leadingContent = {
-                        Icon(
-                            Icons.Default.Webhook,
-                            contentDescription = null
-                        )
-                    },
-                    trailingContent = {
-                        Icon(
-                            Icons.Default.ChevronRight,
-                            contentDescription = null
-                        )
-                    },
-                    modifier = Modifier.clickable {
-                        navController.navigate(Screen.Webhooks.route)
-                    }
-                )
-            }
-            item {
-                ListItem(
-                    headlineContent = { Text("Notifiers") },
-                    leadingContent = {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = null
-                        )
-                    },
-                    trailingContent = {
-                        Icon(
-                            Icons.Default.ChevronRight,
-                            contentDescription = null
-                        )
-                    },
-                    modifier = Modifier.clickable {
-                        navController.navigate(Screen.Notifiers.route)
                     }
                 )
             }

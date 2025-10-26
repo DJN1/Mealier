@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RecipeTag(
-    val id: String? = null,
+    val id: String,
     val name: String,
     val slug: String
 )
