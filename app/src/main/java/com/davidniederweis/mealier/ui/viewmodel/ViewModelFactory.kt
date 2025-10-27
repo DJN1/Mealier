@@ -26,6 +26,7 @@ import com.davidniederweis.mealier.ui.viewmodel.preferences.ServerViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.ThemeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.profile.ProfileViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.AddRecipeViewModel
+import com.davidniederweis.mealier.ui.viewmodel.recipe.CookbookViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.EditRecipeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeViewModel
 
@@ -110,6 +111,10 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(EditCookbookViewModel::class.java) -> {
                 EditCookbookViewModel(recipeRepository) as T
+            }
+
+            modelClass.isAssignableFrom(CookbookViewModel::class.java) -> {
+                CookbookViewModel(recipeRepository) as T
             }
 
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

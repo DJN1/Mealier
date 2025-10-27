@@ -2,7 +2,19 @@ package com.davidniederweis.mealier.ui.screens.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -13,23 +25,38 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.outlined.Restaurant
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.davidniederweis.mealier.data.model.cookbook.Cookbook
 import com.davidniederweis.mealier.ui.components.addrecipe.AddRecipeOptionsDialog
-import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
 import com.davidniederweis.mealier.ui.components.general.EmptyState
 import com.davidniederweis.mealier.ui.components.general.ErrorMessage
 import com.davidniederweis.mealier.ui.components.general.LoadingBox
-import com.davidniederweis.mealier.ui.components.recipe.FilterDialog
-import com.davidniederweis.mealier.ui.components.recipe.RecipeCard
+import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
 import com.davidniederweis.mealier.ui.components.layout.RecipeSearchBar
 import com.davidniederweis.mealier.ui.components.layout.adaptiveGridCells
+import com.davidniederweis.mealier.ui.components.recipe.FilterDialog
+import com.davidniederweis.mealier.ui.components.recipe.RecipeCard
 import com.davidniederweis.mealier.ui.navigation.Screen
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeListState
@@ -96,7 +123,7 @@ fun HomeScreen(
         )
     }
 
-    Scaffold(
+    androidx.compose.material3.Scaffold(
         topBar = {
             Column(
                 modifier = Modifier
@@ -122,22 +149,39 @@ fun HomeScreen(
                                 contentDescription = "Filter"
                             )
                         }
+                    } else {
+                        // Add a spacer to keep the title in the same place
+                        Spacer(modifier = Modifier.height(48.dp)) // Same width as IconButton
                     }
                 }
-                if (pagerState.currentPage == 0) {
-                    RecipeSearchBar(
-                        query = searchQuery,
-                        onQueryChange = { query ->
-                            viewModel.searchRecipes(query)
-                        },
-                        onSearch = {
-                            viewModel.searchRecipes(searchQuery)
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .padding(top = 8.dp, bottom = 12.dp)
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 8.dp, bottom = 12.dp)
+                        .height(56.dp) // Set a fixed height for the search/cookbook area
+                ) {
+                    if (pagerState.currentPage == 0) {
+                        RecipeSearchBar(
+                            query = searchQuery,
+                            onQueryChange = { query ->
+                                viewModel.searchRecipes(query)
+                            },
+                            onSearch = {
+                                viewModel.searchRecipes(searchQuery)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        CookbookDropdown(
+                            selectedCookbook = selectedCookbook,
+                            onCookbookSelected = { 
+                                selectedCookbook = it
+                                viewModel.loadRecipesByCookbook(it.slug)
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
                 TabRow(selectedTabIndex = pagerState.currentPage) {
                     Tab(
@@ -176,106 +220,101 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) { page ->
-            when (page) {
-                0 -> {
-                    // Search Tab
-                    PullToRefreshBox(
-                        isRefreshing = isRefreshing,
-                        onRefresh = {
-                            isRefreshing = true
-                            viewModel.loadRecipes(refresh = true, categoryIds = selectedCategoryIds, tagIds = selectedTagIds)
-                        },
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        when (val state = recipeListState) {
-                            is RecipeListState.Loading -> {
-                                if (!isRefreshing) {
-                                    LoadingBox(modifier = Modifier.fillMaxSize())
-                                }
-                            }
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = {
+                    isRefreshing = true
+                    if (page == 0) {
+                        viewModel.loadRecipes(refresh = true, categoryIds = selectedCategoryIds, tagIds = selectedTagIds)
+                    } else {
+                        selectedCookbook?.let {
+                            viewModel.loadRecipesByCookbook(it.slug)
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                when (val state = recipeListState) {
+                    is RecipeListState.Loading -> {
+                        if (!isRefreshing) {
+                            LoadingBox(modifier = Modifier.fillMaxSize())
+                        }
+                    }
 
-                            is RecipeListState.Success -> {
-                                if (state.recipes.isEmpty()) {
-                                    EmptyState(
-                                        message = if (searchQuery.isNotEmpty()) {
-                                            "No recipes found for \"$searchQuery\""
-                                        } else {
-                                            "No recipes yet"
-                                        },
-                                        icon = {
-                                            Icon(
-                                                imageVector = Icons.Outlined.Restaurant,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(64.dp),
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    )
+                    is RecipeListState.Success -> {
+                        if (state.recipes.isEmpty()) {
+                            EmptyState(
+                                message = if (searchQuery.isNotEmpty() && page == 0) {
+                                    "No recipes found for \"$searchQuery\""
+                                } else if (page == 1 && selectedCookbook == null) {
+                                    "Select a cookbook to see recipes"
                                 } else {
-                                    LazyVerticalGrid(
-                                        columns = adaptiveGridCells(),
-                                        state = listState,
-                                        contentPadding = PaddingValues(16.dp),
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        items(
-                                            items = state.recipes,
-                                            key = { it.id }
-                                        ) { recipe ->
-                                            RecipeCard(
-                                                recipe = recipe,
-                                                onClick = { onRecipeClick(recipe.slug) },
-                                                baseUrl = baseUrl
-                                            )
+                                    "No recipes yet"
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Restaurant,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(64.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            )
+                        } else {
+                            LazyVerticalGrid(
+                                columns = adaptiveGridCells(),
+                                state = listState,
+                                contentPadding = PaddingValues(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(
+                                    items = state.recipes,
+                                    key = { it.id }
+                                ) { recipe ->
+                                    RecipeCard(
+                                        recipe = recipe,
+                                        onClick = { onRecipeClick(recipe.slug) },
+                                        baseUrl = baseUrl
+                                    )
+                                }
+
+                                if (state.recipes.size >= 50 && page == 0) {
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                        LaunchedEffect(Unit) {
+                                            viewModel.loadMoreRecipes()
                                         }
 
-                                        if (state.recipes.size >= 50) {
-                                            item(span = { GridItemSpan(maxLineSpan) }) {
-                                                LaunchedEffect(Unit) {
-                                                    viewModel.loadMoreRecipes()
-                                                }
-
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(16.dp),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    CircularProgressIndicator(
-                                                        modifier = Modifier.size(32.dp)
-                                                    )
-                                                }
-                                            }
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(16.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(32.dp)
+                                            )
                                         }
                                     }
                                 }
                             }
-
-                            is RecipeListState.Error -> {
-                                ErrorMessage(
-                                    message = state.message,
-                                    onRetry = { viewModel.retryLoadRecipes() },
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
-
-                            is RecipeListState.Idle -> {
-                                if (!isRefreshing) {
-                                    LoadingBox(modifier = Modifier.fillMaxSize())
-                                }
-                            }
                         }
                     }
-                }
-                1 -> {
-                    // Cookbook Tab
-                    CookbookRecipes(
-                        onRecipeClick = onRecipeClick,
-                        selectedCookbook = selectedCookbook,
-                        onCookbookSelected = { selectedCookbook = it }
-                    )
+
+                    is RecipeListState.Error -> {
+                        ErrorMessage(
+                            message = state.message,
+                            onRetry = { viewModel.retryLoadRecipes() },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+
+                    is RecipeListState.Idle -> {
+                        if (!isRefreshing) {
+                            LoadingBox(modifier = Modifier.fillMaxSize())
+                        }
+                    }
                 }
             }
         }
