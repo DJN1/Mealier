@@ -8,5 +8,7 @@ data class Tag(
     @SerialName("id")
     val id: String,
     @SerialName("name")
-    val name: String
+    val name: String,
+    @SerialName("slug")
+    val slug: String
 )

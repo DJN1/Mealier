@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.davidniederweis.mealier.BuildConfig
 import com.davidniederweis.mealier.data.model.category.Category
 import com.davidniederweis.mealier.data.model.recipe.RecipeCategory
+import com.davidniederweis.mealier.data.model.recipe.RecipeDetail
 import com.davidniederweis.mealier.data.model.recipe.RecipeSummary
 import com.davidniederweis.mealier.data.model.recipe.RecipeTag
 import com.davidniederweis.mealier.data.model.tag.Tag
@@ -182,13 +183,50 @@ class RecipeViewModel(
         }
     }
 
-    fun clearSearch() {
-        _searchQuery.value = ""
+    fun refresh() {
         loadRecipes(refresh = true)
     }
 
-    fun refresh() {
-        loadRecipes(refresh = true)
+    private fun updateRecipe(slug: String, updateRequest: RecipeDetail) {
+        viewModelScope.launch {
+            val currentState = _recipeDetailState.value
+            if (currentState is RecipeDetailState.Success) {
+                try {
+                    val updatedRecipe = repository.updateRecipe(slug, updateRequest)
+                    _recipeDetailState.value = RecipeDetailState.Success(updatedRecipe)
+                } catch (e: Exception) {
+                    _recipeDetailState.value = RecipeDetailState.Error(e.message ?: "Failed to update recipe")
+                }
+            }
+        }
+    }
+
+    fun updateRecipeCategories(newCategories: List<RecipeCategory>) {
+        val currentState = _recipeDetailState.value
+        if (currentState is RecipeDetailState.Success) {
+            val currentRecipe = currentState.recipe
+            val updatedRecipe = currentRecipe.copy(
+                recipeCategory = newCategories
+            )
+            updateRecipe(
+                slug = currentState.recipe.slug,
+                updateRequest = updatedRecipe
+            )
+        }
+    }
+
+    fun updateRecipeTags(newTags: List<RecipeTag>) {
+        val currentState = _recipeDetailState.value
+        if (currentState is RecipeDetailState.Success) {
+            val currentRecipe = currentState.recipe
+            val updatedRecipe = currentRecipe.copy(
+                tags = newTags
+            )
+            updateRecipe(
+                slug = currentState.recipe.slug,
+                updateRequest = updatedRecipe
+            )
+        }
     }
 
     fun deleteRecipe(slug: String, onSuccess: () -> Unit, onError: (String) -> Unit) {
@@ -199,26 +237,6 @@ class RecipeViewModel(
             } catch (e: Exception) {
                 onError(e.message ?: "Failed to delete recipe")
             }
-        }
-    }
-
-    fun updateRecipeTags(tags: List<Tag>) {
-        val state = _recipeDetailState.value
-        if (state is RecipeDetailState.Success) {
-            val recipeTags = tags.map { RecipeTag(it.id, it.name, it.name.lowercase().replace(" ", "-")) }
-            val updatedRecipe = state.recipe.copy(tags = recipeTags)
-            // Here you would typically also make an API call to save the changes
-            _recipeDetailState.value = RecipeDetailState.Success(updatedRecipe)
-        }
-    }
-
-    fun updateRecipeCategories(categories: List<Category>) {
-        val state = _recipeDetailState.value
-        if (state is RecipeDetailState.Success) {
-            val recipeCategories = categories.map { RecipeCategory(it.id, it.name, it.name.lowercase().replace(" ", "-")) }
-            val updatedRecipe = state.recipe.copy(recipeCategory = recipeCategories)
-            // Here you would typically also make an API call to save the changes
-            _recipeDetailState.value = RecipeDetailState.Success(updatedRecipe)
         }
     }
 }

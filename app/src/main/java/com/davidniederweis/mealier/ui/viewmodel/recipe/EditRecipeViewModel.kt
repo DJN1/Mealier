@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.davidniederweis.mealier.data.model.food.CreateFoodRequest
 import com.davidniederweis.mealier.data.model.food.Food
 import com.davidniederweis.mealier.data.model.ingredient.RecipeIngredient
+import com.davidniederweis.mealier.data.model.ingredient.RecipeIngredientFood
+import com.davidniederweis.mealier.data.model.ingredient.RecipeIngredientUnit
 import com.davidniederweis.mealier.data.model.recipe.*
 import com.davidniederweis.mealier.data.model.unit.CreateUnitRequest
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
@@ -314,61 +316,47 @@ class EditRecipeViewModel(
         viewModelScope.launch {
             _updateState.value = RecipeCreationState.Loading
             try {
-                // Build updated recipe from original + form changes
-                // IMPORTANT: Preserve ALL fields to avoid deletion - this is a PUT (full replacement)
-                val updatedRecipe = original.copy(
-                    // Update ONLY the fields we edit in the form
+                val updateRequest = original.copy(
                     name = _recipeName.value,
                     description = _recipeDescription.value.takeIf { it.isNotBlank() },
                     recipeServings = _servings.value.toDoubleOrNull() ?: original.recipeServings,
                     prepTime = _prepTime.value.takeIf { it.isNotBlank() },
                     cookTime = _cookTime.value.takeIf { it.isNotBlank() },
                     totalTime = _totalTime.value.takeIf { it.isNotBlank() },
-                    // Preserve ALL other fields from original
-                    // id, slug, image, rating, performTime, recipeYield, recipeYieldQuantity,
-                    // recipeCategory, notes, tags, orgURL are all preserved by .copy()
-                    // Keep ALL original ingredients, update only those with form input
-                    recipeIngredient = original.recipeIngredient.mapIndexed { index, origIng ->
-                        val input = _ingredients.value.getOrNull(index)
-                        if (input != null && input.food != null) {
-                            // Update this ingredient with form data
+                    recipeIngredient = _ingredients.value.mapNotNull { input ->
+                        if (input.food != null) {
                             RecipeIngredient(
-                                title = origIng.title,
+                                title = null,
                                 note = input.note.takeIf { it.isNotBlank() },
-                                unit = origIng.unit,
-                                food = origIng.food,
-                                disableAmount = origIng.disableAmount,
-                                quantity = input.quantity.toDoubleOrNull() ?: origIng.quantity,
-                                display = origIng.display,
-                                originalText = origIng.originalText,
-                                referenceId = origIng.referenceId
+                                unit = input.unit?.let { RecipeIngredientUnit(id = it.id, name = it.name) },
+                                food = RecipeIngredientFood(id = input.food.id, name = input.food.name),
+                                disableAmount = false,
+                                quantity = input.quantity.toDoubleOrNull() ?: 1.0,
+                                display = "${input.quantity} ${input.unit?.name ?: ""} ${input.food.name}",
+                                originalText = "",
+                                referenceId = ""
                             )
                         } else {
-                            // Keep original ingredient unchanged
-                            origIng
+                            null
                         }
                     },
-                    // Keep ALL original instructions, update only those with form input
-                    recipeInstructions = original.recipeInstructions?.mapIndexed { index, origInst ->
-                        val input = _instructions.value.getOrNull(index)
-                        if (input != null && (input.title.isNotBlank() || input.text.isNotBlank())) {
-                            // Update this instruction with form data
+                    recipeInstructions = _instructions.value.mapNotNull { input ->
+                        if (input.text.isNotBlank()) {
                             RecipeInstruction(
-                                id = origInst.id,
+                                id = "", // This will be ignored by the API on update, but is required by the data class
                                 title = input.title.takeIf { it.isNotBlank() } ?: "",
-                                text = input.text.takeIf { it.isNotBlank() },
-                                summary = input.text.takeIf { it.isNotBlank() },
-                                ingredientReferences = origInst.ingredientReferences
+                                text = input.text,
+                                summary = null,
+                                ingredientReferences = emptyList()
                             )
                         } else {
-                            // Keep original instruction unchanged
-                            origInst
+                            null
                         }
                     }
                 )
 
-                Logger.d("EditRecipeViewModel", "Updating recipe with ${updatedRecipe.recipeIngredient.size} ingredients, ${updatedRecipe.recipeInstructions?.size} instructions")
-                val recipe = repository.updateRecipe(_recipeSlug.value, updatedRecipe)
+                Logger.d("EditRecipeViewModel", "Updating recipe with ${updateRequest.recipeIngredient.size} ingredients, ${updateRequest.recipeInstructions?.size} instructions")
+                val recipe = repository.updateRecipe(_recipeSlug.value, updateRequest)
                 Logger.i("EditRecipeViewModel", "Successfully updated recipe: ${recipe.name}")
 
                 // Upload image if provided (file or URL)

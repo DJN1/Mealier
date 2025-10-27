@@ -86,7 +86,7 @@ class TagManagementViewModel(
     fun updateTag(id: String, name: String) {
         viewModelScope.launch {
             try {
-                val updatedTag = Tag(id = id, name = name)
+                val updatedTag = Tag(id = id, name = name, slug = name.lowercase().replace(" ", "-"))
                 recipeRepository.updateTag(id, updatedTag)
                 getTags() // Refresh list
             } catch (e: Exception) {
