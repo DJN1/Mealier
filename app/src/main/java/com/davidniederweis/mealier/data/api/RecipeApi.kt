@@ -54,7 +54,7 @@ interface RecipeApi {
     suspend fun createRecipeFromUrl(@Body request: CreateRecipeFromUrlRequest): RecipeDetail
 
     // Update recipe
-    @PATCH("api/recipes/{slug}")
+    @PUT("api/recipes/{slug}")
     suspend fun updateRecipe(
         @Path("slug") slug: String,
         @Body recipe: RecipeDetail

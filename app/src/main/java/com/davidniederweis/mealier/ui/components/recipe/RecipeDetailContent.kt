@@ -5,18 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-<<<<<<< Updated upstream
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.ShoppingCart
-||||||| Stash base
-import androidx.compose.material.icons.filled.*
-=======
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.ShoppingCart
->>>>>>> Stashed changes
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,10 +28,7 @@ import com.davidniederweis.mealier.data.model.recipe.RecipeTag
 fun RecipeDetailContent(
     recipe: RecipeDetail,
     baseUrl: String,
-    modifier: Modifier = Modifier,
-    isAdmin: Boolean,
-    onEditCategoriesClick: () -> Unit,
-    onEditTagsClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     // Track gathered ingredients by their index
     val gatheredIngredients = remember { mutableStateSetOf<Int>() }
@@ -100,7 +88,6 @@ fun RecipeDetailContent(
                 )
             }
 
-<<<<<<< Updated upstream
             // Tags and Categories
             if (!recipe.recipeCategory.isNullOrEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -144,80 +131,6 @@ fun RecipeDetailContent(
                 }
             }
 
-||||||| Stash base
-=======
-            // Categories
-            if (isAdmin || !recipe.recipeCategory.isNullOrEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Categories", style = MaterialTheme.typography.titleMedium)
-                        if (isAdmin) {
-                            IconButton(onClick = onEditCategoriesClick, modifier = Modifier.size(32.dp)) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit Categories",
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                    if (!recipe.recipeCategory.isNullOrEmpty()) {
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            recipe.recipeCategory?.forEach { category: RecipeCategory ->
-                                AssistChip(
-                                    onClick = { /* Disabled */ },
-                                    label = { Text(category.name) },
-                                    colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            // Tags
-            if (isAdmin || !recipe.tags.isNullOrEmpty()) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Tags", style = MaterialTheme.typography.titleMedium)
-                        if (isAdmin) {
-                            IconButton(onClick = onEditTagsClick, modifier = Modifier.size(32.dp)) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit Tags",
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                        }
-                    }
-                    if (!recipe.tags.isNullOrEmpty()) {
-                        FlowRow(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            recipe.tags?.forEach { tag: RecipeTag ->
-                                AssistChip(
-                                    onClick = { /* Disabled */ },
-                                    label = { Text(tag.name) },
-                                    colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
->>>>>>> Stashed changes
             // Recipe Info Cards
             val hasTimeData = hasTimeData(recipe)
             val servingsDisplay = getServingsDisplay(recipe)
