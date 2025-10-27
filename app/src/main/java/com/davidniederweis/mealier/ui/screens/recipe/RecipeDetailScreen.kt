@@ -1,22 +1,52 @@
 package com.davidniederweis.mealier.ui.screens.recipe
 
 import android.content.Intent
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.davidniederweis.mealier.BuildConfig
+<<<<<<< Updated upstream
 import com.davidniederweis.mealier.data.model.category.Category
 import com.davidniederweis.mealier.data.model.recipe.RecipeCategory
 import com.davidniederweis.mealier.data.model.recipe.RecipeTag
 import com.davidniederweis.mealier.data.model.tag.Tag
+||||||| Stash base
+import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
+=======
+import com.davidniederweis.mealier.data.model.recipe.RecipeCategory
+import com.davidniederweis.mealier.data.model.recipe.RecipeTag
+>>>>>>> Stashed changes
 import com.davidniederweis.mealier.ui.components.general.ErrorMessage
 import com.davidniederweis.mealier.ui.components.general.LoadingBox
 import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
@@ -42,7 +72,13 @@ fun RecipeDetailScreen(
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
     var deleteError by remember { mutableStateOf<String?>(null) }
+<<<<<<< Updated upstream
     var showEditTagsAndCategoriesSheet by remember { mutableStateOf(false) }
+||||||| Stash base
+=======
+    var showEditTagsSheet by remember { mutableStateOf(false) }
+    var showEditCategoriesSheet by remember { mutableStateOf(false) }
+>>>>>>> Stashed changes
 
     LaunchedEffect(slug) {
         viewModel.loadRecipeDetail(slug)
@@ -163,7 +199,10 @@ fun RecipeDetailScreen(
                         .fillMaxSize()
                         .padding(paddingValues),
                     recipe = state.recipe,
-                    baseUrl = baseUrl
+                    baseUrl = baseUrl,
+                    isAdmin = isAdmin,
+                    onEditCategoriesClick = { showEditCategoriesSheet = true },
+                    onEditTagsClick = { showEditTagsSheet = true }
                 )
             }
             is RecipeDetailState.Error -> {
@@ -230,6 +269,7 @@ fun RecipeDetailScreen(
             }
         )
     }
+<<<<<<< Updated upstream
 
     if (showEditTagsAndCategoriesSheet) {
         val state = recipeDetailState as? RecipeDetailState.Success
@@ -255,3 +295,40 @@ fun RecipeDetailScreen(
         }
     }
 }
+||||||| Stash base
+}
+=======
+
+    if (showEditCategoriesSheet) {
+        val state = recipeDetailState as? RecipeDetailState.Success
+        if (state != null) {
+            val allCategories by viewModel.allCategories.collectAsState()
+
+            EditRecipeCategoriesSheet(
+                recipeCategories = state.recipe.recipeCategory ?: emptyList(),
+                allCategories = allCategories.map { RecipeCategory(it.id, it.name, it.slug) },
+                onCategoriesChange = { recipeCategories ->
+                    viewModel.updateRecipeCategories(recipeCategories)
+                },
+                onDismiss = { showEditCategoriesSheet = false }
+            )
+        }
+    }
+
+    if (showEditTagsSheet) {
+        val state = recipeDetailState as? RecipeDetailState.Success
+        if (state != null) {
+            val allTags by viewModel.allTags.collectAsState()
+
+            EditRecipeTagsSheet(
+                recipeTags = state.recipe.tags ?: emptyList(),
+                allTags = allTags.map { RecipeTag(it.id, it.name, it.slug) },
+                onTagsChange = { recipeTags ->
+                    viewModel.updateRecipeTags(recipeTags)
+                },
+                onDismiss = { showEditTagsSheet = false }
+            )
+        }
+    }
+}
+>>>>>>> Stashed changes

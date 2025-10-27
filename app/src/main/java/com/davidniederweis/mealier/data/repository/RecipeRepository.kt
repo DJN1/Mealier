@@ -341,7 +341,6 @@ class RecipeRepository(
     suspend fun updateRecipe(slug: String, recipe: RecipeDetail): RecipeDetail {
         return try {
             Logger.d("RecipeRepository", "Updating recipe: $slug")
-            Logger.d("RecipeRepository", "Recipe details - name: ${recipe.name}, ingredients: ${recipe.recipeIngredient.size}, instructions: ${recipe.recipeInstructions?.size}")
             val updated = recipeApi.updateRecipe(slug, recipe)
             Logger.i("RecipeRepository", "Successfully updated recipe: ${updated.name}")
             updated
