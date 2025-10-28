@@ -40,7 +40,4 @@ class ServerPreferences(private val context: Context) {
         return serverUrl.first()
     }
 
-    suspend fun hasServerUrl(): Boolean {
-        return getServerUrlOnce().isNotBlank()
-    }
 }

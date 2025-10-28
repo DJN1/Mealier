@@ -18,11 +18,11 @@ import com.davidniederweis.mealier.data.model.ingredient.RecipeIngredient
 
 @Composable
 fun IngredientItem(
+    modifier: Modifier = Modifier,
     ingredient: RecipeIngredient,
     servingsMultiplier: Double = 1.0,
     isGathered: Boolean,
     onToggle: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
     val annotatedText = formatIngredientAnnotated(ingredient, servingsMultiplier, isGathered)
 

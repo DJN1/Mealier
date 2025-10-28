@@ -320,25 +320,6 @@ class AddRecipeViewModel(
         }
     }
 
-    // Reset state
-    fun resetCreationState() {
-        _creationState.value = RecipeCreationState.Idle
-    }
-
-    fun clearForm() {
-        _recipeName.value = ""
-        _recipeDescription.value = ""
-        _ingredients.value = listOf(IngredientInput())
-        _instructions.value = listOf(InstructionInput())
-        _servings.value = ""
-        _prepTime.value = ""
-        _cookTime.value = ""
-        _totalTime.value = ""
-        _nutrition.value = NutritionInput()
-        _imageFile.value = null
-        _imageUrl.value = ""
-        _recipeUrl.value = ""
-    }
 }
 
 // State classes

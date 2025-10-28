@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PaginatedResponse<T>(
     val page: Int,
-    val per_page: Int,
+    val perPage: Int,
     val total: Int,
-    val total_pages: Int,
+    val totalPages: Int,
     val items: List<T>
 )

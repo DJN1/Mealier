@@ -3,7 +3,6 @@ package com.davidniederweis.mealier.ui.viewmodel.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.davidniederweis.mealier.data.api.UserApi
-import com.davidniederweis.mealier.data.model.user.UserProfile
 import com.davidniederweis.mealier.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -16,9 +16,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ErrorMessage(
+    modifier: Modifier = Modifier,
     message: String,
     onRetry: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier

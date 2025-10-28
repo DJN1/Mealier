@@ -29,7 +29,4 @@ class ServerViewModel(
         }
     }
 
-    suspend fun hasServerUrl(): Boolean {
-        return serverPreferences.hasServerUrl()
-    }
 }

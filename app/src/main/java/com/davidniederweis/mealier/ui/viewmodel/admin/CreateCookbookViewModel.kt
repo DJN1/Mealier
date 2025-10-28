@@ -1,6 +1,5 @@
 package com.davidniederweis.mealier.ui.viewmodel.admin
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.davidniederweis.mealier.data.model.category.Category
@@ -8,9 +7,10 @@ import com.davidniederweis.mealier.data.model.food.Food
 import com.davidniederweis.mealier.data.model.household.Household
 import com.davidniederweis.mealier.data.model.tag.Tag
 import com.davidniederweis.mealier.data.model.tool.Tool
-import com.davidniederweis.mealier.data.models.CreateCookBook
+import com.davidniederweis.mealier.data.model.CreateCookBook
 import com.davidniederweis.mealier.data.repository.RecipeRepository
 import com.davidniederweis.mealier.ui.screens.admin.FilterState
+import com.davidniederweis.mealier.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -40,18 +40,19 @@ class CreateCookbookViewModel(
     fun loadInitialData() {
         viewModelScope.launch {
             try {
-                Log.d("CreateCookbookViewModel", "Loading initial data...")
+                Logger.d("CreateCookbookViewModel", "Loading initial data...")
                 _categories.value = recipeRepository.getCategories()
                 _tags.value = recipeRepository.getTags()
                 _ingredients.value = recipeRepository.getFoods()
                 _tools.value = recipeRepository.getTools()
                 _households.value = recipeRepository.getHouseholds()
-                Log.d("CreateCookbookViewModel", "Initial data loaded successfully")
+                Logger.d("CreateCookbookViewModel", "Initial data loaded successfully")
             } catch (e: Exception) {
-                Log.e("CreateCookbookViewModel", "Failed to load initial data", e)
+                Logger.e("CreateCookbookViewModel", "Failed to load initial data", e)
             }
         }
     }
+
 
     private fun createQueryFilterString(filters: List<FilterState>): String {
         return filters.joinToString(" AND ") { filter ->
@@ -97,9 +98,9 @@ class CreateCookbookViewModel(
             try {
                 recipeRepository.createCookbook(cookbook)
                 _cookbookSaved.value = true
-                Log.d("CreateCookbookViewModel", "Cookbook saved successfully")
+                Logger.d("CreateCookbookViewModel", "Cookbook saved successfully")
             } catch (e: Exception) {
-                Log.e("CreateCookbookViewModel", "Failed to save cookbook", e)
+                Logger.e("CreateCookbookViewModel", "Failed to save cookbook", e)
             }
         }
     }

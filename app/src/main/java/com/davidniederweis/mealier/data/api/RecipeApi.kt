@@ -16,7 +16,7 @@ import com.davidniederweis.mealier.data.model.tool.ToolListResponse
 import com.davidniederweis.mealier.data.model.unit.CreateUnitRequest
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
 import com.davidniederweis.mealier.data.model.unit.UnitListResponse
-import com.davidniederweis.mealier.data.models.CreateCookBook
+import com.davidniederweis.mealier.data.model.CreateCookBook
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody

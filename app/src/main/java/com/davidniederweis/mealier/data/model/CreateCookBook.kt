@@ -1,4 +1,4 @@
-package com.davidniederweis.mealier.data.models
+package com.davidniederweis.mealier.data.model
 
 import kotlinx.serialization.Serializable
 

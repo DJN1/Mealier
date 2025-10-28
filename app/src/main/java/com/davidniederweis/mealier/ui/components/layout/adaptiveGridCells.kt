@@ -2,13 +2,15 @@ package com.davidniederweis.mealier.ui.components.layout
 
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun adaptiveGridCells(): GridCells {
-    val configuration = LocalConfiguration.current
-    val screenWidth =  configuration.screenWidthDp.dp
+    val screenWidth = with(LocalDensity.current) {
+        LocalWindowInfo.current.containerSize.width.toDp()
+    }
 
     return GridCells.Adaptive(
         minSize = when {

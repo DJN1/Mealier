@@ -3,7 +3,6 @@ package com.davidniederweis.mealier.ui.viewmodel.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.davidniederweis.mealier.data.repository.AuthRepository
-import com.davidniederweis.mealier.data.security.SecureDataStoreManager
 import com.davidniederweis.mealier.data.preferences.BiometricsPreferences
 import com.davidniederweis.mealier.data.repository.Result
 import com.davidniederweis.mealier.util.Logger
@@ -14,7 +13,6 @@ import kotlinx.coroutines.launch
 
 class AuthViewModel(
     private val authRepository: AuthRepository,
-    private val tokenManager: SecureDataStoreManager,
     private val biometricsPreferences: BiometricsPreferences
 ) : ViewModel() {
 
@@ -25,7 +23,6 @@ class AuthViewModel(
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
     private val _biometricEnabled = MutableStateFlow(false)
-    val biometricEnabled: StateFlow<Boolean> = _biometricEnabled.asStateFlow()
 
     private val _showBiometricPrompt = MutableStateFlow(false)
     val showBiometricPrompt: StateFlow<Boolean> = _showBiometricPrompt.asStateFlow()
@@ -54,13 +51,6 @@ class AuthViewModel(
     fun onBiometricSuccess() {
         _showBiometricPrompt.value = false
         loadCurrentUser()
-    }
-
-    fun onBiometricError() {
-        viewModelScope.launch {
-            logout()
-            _authState.value = AuthState.Error("Biometric authentication failed")
-        }
     }
 
     fun skipBiometric() {
@@ -108,26 +98,4 @@ class AuthViewModel(
         }
     }
 
-    fun logout() {
-        viewModelScope.launch {
-            authRepository.logout()
-            biometricsPreferences.setBiometricEnabled(false)
-            _isLoggedIn.value = false
-            _biometricEnabled.value = false
-            _authState.value = AuthState.Unauthenticated
-        }
-    }
-
-    fun clearError() {
-        if (_authState.value is AuthState.Error) {
-            _authState.value = AuthState.Idle
-        }
-    }
-
-    fun toggleBiometric(enabled: Boolean) {
-        viewModelScope.launch {
-            biometricsPreferences.setBiometricEnabled(enabled)
-            _biometricEnabled.value = enabled
-        }
-    }
 }

@@ -120,7 +120,7 @@ fun <T> EditRecipeDataSheet(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    currentSelectedItems.forEach { item ->
+                    currentSelectedItems.sortedBy { itemName(it) }.forEach { item ->
                         FilterChip(
                             selected = true,
                             onClick = { currentSelectedItems.remove(item) },
@@ -137,7 +137,7 @@ fun <T> EditRecipeDataSheet(
             ) {
                 val filtered = allItems.filter {
                     itemName(it).contains(searchQuery, ignoreCase = true) && !currentSelectedItems.any { selected -> itemId(it) == itemId(selected) }
-                }
+                }.sortedBy { itemName(it) }
                 items(filtered) { item ->
                     ListItem(
                         headlineContent = { Text(itemName(item)) },

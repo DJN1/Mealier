@@ -1,9 +1,9 @@
 package com.davidniederweis.mealier.ui.viewmodel.admin
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.davidniederweis.mealier.data.repository.HouseholdRepository
+import com.davidniederweis.mealier.util.Logger
 import kotlinx.coroutines.launch
 
 class HouseholdSettingsViewModel(private val householdRepository: HouseholdRepository) : ViewModel() {
@@ -20,7 +20,7 @@ class HouseholdSettingsViewModel(private val householdRepository: HouseholdRepos
     ) {
         viewModelScope.launch {
             try {
-                Log.d("HouseholdSettings", "Sending update request...")
+                Logger.d("HouseholdSettings", "Sending update request...")
                 householdRepository.updateHouseholdSettings(
                     privateHousehold = privateHousehold,
                     lockRecipeEditsFromOtherHouseholds = lockRecipeEdits,
@@ -31,9 +31,9 @@ class HouseholdSettingsViewModel(private val householdRepository: HouseholdRepos
                     recipeDisableComments = disableCommenting,
                     firstDayOfWeek = getDayOfWeekInt(firstDayOfWeek)
                 )
-                Log.d("HouseholdSettings", "Update request successful")
+                Logger.d("HouseholdSettings", "Update request successful")
             } catch (e: Exception) {
-                Log.e("HouseholdSettings", "Failed to update settings", e)
+                Logger.e("HouseholdSettings", "Failed to update settings", e)
             }
         }
     }

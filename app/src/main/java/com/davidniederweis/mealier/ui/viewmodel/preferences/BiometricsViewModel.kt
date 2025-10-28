@@ -19,12 +19,6 @@ class BiometricsViewModel(
             initialValue = true
         )
 
-    fun toggleBiometric() {
-        viewModelScope.launch {
-            biometricsPreferences.toggleBiometric()
-        }
-    }
-
     fun setBiometricEnabled(enabled: Boolean) {
         viewModelScope.launch {
             biometricsPreferences.setBiometricEnabled(enabled)

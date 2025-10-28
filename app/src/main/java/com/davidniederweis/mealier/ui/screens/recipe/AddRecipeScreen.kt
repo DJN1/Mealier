@@ -22,7 +22,7 @@ fun AddRecipeScreen(
     viewModel: AddRecipeViewModel = appViewModel()
 ) {
     val creationState by viewModel.creationState.collectAsState()
-    var selectedTabIndex by remember { mutableStateOf(initialTab) }
+    var selectedTabIndex by remember { mutableIntStateOf(initialTab) }
     val tabs = listOf("Manual", "Import URL")
 
     // Handle success state

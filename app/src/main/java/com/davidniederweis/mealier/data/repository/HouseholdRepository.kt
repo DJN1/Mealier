@@ -1,7 +1,6 @@
 package com.davidniederweis.mealier.data.repository
 
 import com.davidniederweis.mealier.data.api.HouseholdApi
-import com.davidniederweis.mealier.data.model.household.Household
 import com.davidniederweis.mealier.data.model.household.HouseholdSettingsUpdate
 import com.davidniederweis.mealier.util.Logger
 

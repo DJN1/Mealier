@@ -13,7 +13,7 @@ import com.davidniederweis.mealier.data.model.tag.Tag
 import com.davidniederweis.mealier.data.model.tool.Tool
 import com.davidniederweis.mealier.data.model.unit.CreateUnitRequest
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
-import com.davidniederweis.mealier.data.models.CreateCookBook
+import com.davidniederweis.mealier.data.model.CreateCookBook
 import com.davidniederweis.mealier.util.Logger
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody

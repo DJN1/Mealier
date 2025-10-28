@@ -40,7 +40,7 @@ fun RecipeDetailContent(
     val completedInstructions = remember { mutableStateSetOf<Int>() }
 
     // Track current servings count for scaling ingredients
-    var currentServings by remember { mutableDoubleStateOf(recipe.recipeServings.toDouble()) }
+    var currentServings by remember { mutableDoubleStateOf(recipe.recipeServings) }
 
     // Calculate servings multiplier from current servings
     val servingsMultiplier = if (recipe.recipeServings > 0) {

@@ -46,7 +46,7 @@ class SecureDataStoreManager(private val context: Context) {
             // Try to recover by clearing corrupted keyset and recreating
             try {
                 Logger.i("SecureDataStore", "Clearing corrupted keyset and recreating")
-                context.getSharedPreferences(KEYSET_PREF_NAME, android.content.Context.MODE_PRIVATE)
+                context.getSharedPreferences(KEYSET_PREF_NAME, Context.MODE_PRIVATE)
                     .edit()
                     .clear()
                     .apply()
@@ -206,18 +206,6 @@ class SecureDataStoreManager(private val context: Context) {
         } catch (e: Exception) {
             Logger.e("SecureDataStore", "Failed to get password", e)
             null
-        }
-    }
-
-    suspend fun clearCredentials() {
-        try {
-            context.dataStore.edit { prefs ->
-                prefs.remove(KEY_USERNAME)
-                prefs.remove(KEY_PASSWORD)
-            }
-            Logger.i("SecureDataStore", "Credentials cleared successfully")
-        } catch (e: Exception) {
-            Logger.e("SecureDataStore", "Failed to clear credentials", e)
         }
     }
 

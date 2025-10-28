@@ -76,16 +76,4 @@ class BiometricAuthHelper(private val context: Context) {
         biometricPrompt.authenticate(promptInfo)
     }
 
-    fun isBiometricEnabled(): Boolean {
-        val prefs = context.getSharedPreferences("biometric_prefs", Context.MODE_PRIVATE)
-        val enabled = prefs.getBoolean("biometric_enabled", false)
-        Logger.d("BiometricAuth", "Biometric enabled: $enabled")
-        return enabled
-    }
-
-    fun setBiometricEnabled(enabled: Boolean) {
-        Logger.i("BiometricAuth", "Setting biometric enabled: $enabled")
-        val prefs = context.getSharedPreferences("biometric_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putBoolean("biometric_enabled", enabled).apply()
-    }
 }

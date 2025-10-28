@@ -32,11 +32,4 @@ class ThemePreferences(private val context: Context) {
         }
     }
 
-    suspend fun toggleDarkMode() {
-        context.dataStore.edit { preferences ->
-            val current = preferences[DARK_MODE_KEY] ?: false
-            preferences[DARK_MODE_KEY] = !current
-            Logger.i("ThemePreferences", "Toggled dark mode from $current to ${!current}")
-        }
-    }
 }

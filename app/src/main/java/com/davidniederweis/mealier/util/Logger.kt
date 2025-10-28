@@ -2,6 +2,7 @@ package com.davidniederweis.mealier.util
 
 import android.util.Log
 import com.davidniederweis.mealier.BuildConfig
+import timber.log.Timber
 
 object Logger {
     private const val TAG = "Mealier"
@@ -30,9 +31,9 @@ object Logger {
     fun v(tag: String = TAG, message: String, throwable: Throwable? = null) {
         if (currentLevel.priority <= Level.VERBOSE.priority) {
             if (throwable != null) {
-                Log.v(tag, message, throwable)
+                Timber.tag(tag).v(throwable, message)
             } else {
-                Log.v(tag, message)
+                Timber.tag(tag).v(message)
             }
         }
     }
@@ -40,9 +41,9 @@ object Logger {
     fun d(tag: String = TAG, message: String, throwable: Throwable? = null) {
         if (currentLevel.priority <= Level.DEBUG.priority) {
             if (throwable != null) {
-                Log.d(tag, message, throwable)
+                Timber.tag(tag).d(throwable, message)
             } else {
-                Log.d(tag, message)
+                Timber.tag(tag).d(message)
             }
         }
     }
@@ -50,9 +51,9 @@ object Logger {
     fun i(tag: String = TAG, message: String, throwable: Throwable? = null) {
         if (currentLevel.priority <= Level.INFO.priority) {
             if (throwable != null) {
-                Log.i(tag, message, throwable)
+                Timber.tag(tag).i(throwable, message)
             } else {
-                Log.i(tag, message)
+                Timber.tag(tag).i(message)
             }
         }
     }
@@ -60,9 +61,9 @@ object Logger {
     fun w(tag: String = TAG, message: String, throwable: Throwable? = null) {
         if (currentLevel.priority <= Level.WARN.priority) {
             if (throwable != null) {
-                Log.w(tag, message, throwable)
+                Timber.tag(tag).w(throwable, message)
             } else {
-                Log.w(tag, message)
+                Timber.tag(tag).w(message)
             }
         }
     }
@@ -70,19 +71,9 @@ object Logger {
     fun e(tag: String = TAG, message: String, throwable: Throwable? = null) {
         if (currentLevel.priority <= Level.ERROR.priority) {
             if (throwable != null) {
-                Log.e(tag, message, throwable)
+                Timber.tag(tag).e(throwable, message)
             } else {
-                Log.e(tag, message)
-            }
-        }
-    }
-
-    fun wtf(tag: String = TAG, message: String, throwable: Throwable? = null) {
-        if (currentLevel.priority <= Level.ERROR.priority) {
-            if (throwable != null) {
-                Log.wtf(tag, message, throwable)
-            } else {
-                Log.wtf(tag, message)
+                Timber.tag(tag).e(message)
             }
         }
     }

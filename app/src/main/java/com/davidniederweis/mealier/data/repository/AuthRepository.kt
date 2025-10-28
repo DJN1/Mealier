@@ -11,7 +11,7 @@ class AuthRepository(
     private val authApi: AuthApi,
     private val tokenManager: SecureDataStoreManager
 ) {
-    suspend fun login(username: String, password: String): Flow<Result<UserProfile>> = flow {
+    fun login(username: String, password: String): Flow<Result<UserProfile>> = flow {
         emit(Result.Loading)
         try {
             Logger.d("AuthRepository", "Attempting login for user: $username")
@@ -44,7 +44,7 @@ class AuthRepository(
         return tokenManager.hasToken()
     }
 
-    suspend fun getCurrentUser(): Flow<Result<UserProfile>> = flow {
+    fun getCurrentUser(): Flow<Result<UserProfile>> = flow {
         emit(Result.Loading)
         try {
             // Check if we have a token

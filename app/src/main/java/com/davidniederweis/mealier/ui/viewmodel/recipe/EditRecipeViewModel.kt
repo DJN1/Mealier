@@ -40,8 +40,7 @@ class EditRecipeViewModel(
 
     // Recipe form state
     private val _recipeSlug = MutableStateFlow("")
-    val recipeSlug: StateFlow<String> = _recipeSlug.asStateFlow()
-    
+
     // Store the original recipe to update
     private var originalRecipe: RecipeDetail? = null
 
@@ -393,10 +392,6 @@ class EditRecipeViewModel(
         }
     }
 
-    // Reset state
-    fun resetUpdateState() {
-        _updateState.value = RecipeCreationState.Idle
-    }
 }
 
 // Loading state for initial recipe fetch

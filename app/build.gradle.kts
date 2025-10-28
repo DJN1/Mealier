@@ -37,7 +37,7 @@ android {
             ?: "https://your-default-url.com" // Fallback for development
         buildConfigField("String", "BASE_URL", "\"$baseUrl\"")
         buildConfigField("String", "VERSION_NAME", "\"${versionName}\"")
-        buildConfigField("int", "VERSION_CODE", "${versionCode}")
+        buildConfigField("int", "VERSION_CODE", "$versionCode")
         buildConfigField("String", "LOG_LEVEL", "\"DEBUG\"")
     }
 

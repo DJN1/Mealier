@@ -8,6 +8,8 @@ import com.davidniederweis.mealier.data.preferences.ThemePreferences
 import com.davidniederweis.mealier.data.repository.AuthRepository
 import com.davidniederweis.mealier.data.repository.HouseholdRepository
 import com.davidniederweis.mealier.data.repository.HouseholdRepositoryImpl
+import com.davidniederweis.mealier.data.repository.ImportRecipeFromUrlUseCase
+import com.davidniederweis.mealier.data.repository.RecipeImportRepository
 import com.davidniederweis.mealier.data.repository.RecipeRepository
 import com.davidniederweis.mealier.data.repository.UserRepository
 import com.davidniederweis.mealier.data.repository.UserRepositoryImpl
@@ -26,6 +28,8 @@ class MealierApplication : Application() {
         AuthRepository(apiClient.authApi, secureDataStore)
     }
     private val recipeRepository by lazy { RecipeRepository(apiClient.recipeApi) }
+    private val recipeImportRepository by lazy { RecipeImportRepository(apiClient.recipeApi) }
+    private val importRecipeFromUrlUseCase by lazy { ImportRecipeFromUrlUseCase(recipeImportRepository) }
     private val userRepository: UserRepository by lazy { UserRepositoryImpl(apiClient.userApi) }
     private val householdRepository: HouseholdRepository by lazy { HouseholdRepositoryImpl(apiClient.householdApi) }
 
@@ -34,17 +38,14 @@ class MealierApplication : Application() {
         ViewModelFactory(
             authRepository = authRepository,
             userApi = apiClient.userApi,
-            tokenManager = secureDataStore,
             recipeRepository = recipeRepository,
             userRepository = userRepository,
             householdRepository = householdRepository,
             themePreferences = themePreferences,
             biometricsPreferences = biometricsPreferences,
-            serverPreferences = serverPreferences
+            serverPreferences = serverPreferences,
+            importRecipeFromUrlUseCase = importRecipeFromUrlUseCase
         )
     }
 
-    override fun onCreate() {
-        super.onCreate()
-    }
 }

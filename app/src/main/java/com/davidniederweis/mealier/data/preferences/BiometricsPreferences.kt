@@ -32,11 +32,4 @@ class BiometricsPreferences(private val context: Context) {
         }
     }
 
-    suspend fun toggleBiometric() {
-        context.biometricsDataStore.edit { preferences ->
-            val current = preferences[BIOMETRIC_ENABLED] ?: true
-            preferences[BIOMETRIC_ENABLED] = !current
-            Logger.i("BiometricsPreferences", "Toggled biometric from $current to ${!current}")
-        }
-    }
 }

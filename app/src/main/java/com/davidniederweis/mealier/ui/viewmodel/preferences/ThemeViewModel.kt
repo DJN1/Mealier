@@ -18,12 +18,6 @@ class ThemeViewModel(
             initialValue = false
         )
 
-    fun toggleDarkMode() {
-        viewModelScope.launch {
-            themePreferences.toggleDarkMode()
-        }
-    }
-
     fun setDarkMode(enabled: Boolean) {
         viewModelScope.launch {
             themePreferences.setDarkMode(enabled)

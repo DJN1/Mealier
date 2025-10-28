@@ -30,7 +30,6 @@ class UnitManagementViewModel(
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     private val _sortAscending = MutableStateFlow(true)
-    val sortAscending: StateFlow<Boolean> = _sortAscending.asStateFlow()
 
     fun getUnits() {
         viewModelScope.launch {
