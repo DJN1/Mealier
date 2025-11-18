@@ -1,20 +1,20 @@
 package com.davidniederweis.mealier.ui.components.recipe
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -39,98 +39,107 @@ fun InstructionItem(
         return
     }
 
-    Row(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onToggle)
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(vertical = 6.dp),
+        tonalElevation = if (isCompleted) 0.dp else 2.dp,
+        color = if (isCompleted) {
+            MaterialTheme.colorScheme.surfaceVariant
+        } else {
+            MaterialTheme.colorScheme.surface
+        },
+        shape = MaterialTheme.shapes.medium,
+        border = if (isCompleted) null else BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+        )
     ) {
-        Surface(
-            shape = MaterialTheme.shapes.small,
-            color = if (isCompleted) {
-                MaterialTheme.colorScheme.surfaceVariant
-            } else {
-                MaterialTheme.colorScheme.primaryContainer
-            },
-            modifier = Modifier.size(28.dp)
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Text(
-                    text = stepNumber.toString(),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (isCompleted) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    },
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = if (isCompleted) {
-                        TextDecoration.LineThrough
-                    } else {
-                        null
-                    }
-                )
-            }
-        }
-
         Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Show title if exists
-            if (hasTitle) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = if (isCompleted) {
-                        TextDecoration.LineThrough
-                    } else {
-                        null
-                    },
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(
+                    shape = MaterialTheme.shapes.small,
                     color = if (isCompleted) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
+                        MaterialTheme.colorScheme.surfaceTint.copy(alpha = 0.25f)
                     } else {
-                        MaterialTheme.colorScheme.onSurface
+                        MaterialTheme.colorScheme.primaryContainer
                     }
-                )
+                ) {
+                    Text(
+                        text = "Step $stepNumber",
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .sizeIn(minHeight = 16.dp),
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (isCompleted) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        }
+                    )
+                }
+
+                if (hasTitle) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = if (isCompleted) TextDecoration.LineThrough else null,
+                        color = if (isCompleted) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                }
             }
 
-            // Show text if exists, otherwise show summary
-            if (hasText) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textDecoration = if (isCompleted) {
-                        TextDecoration.LineThrough
-                    } else {
-                        null
-                    },
-                    color = if (isCompleted) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    }
-                )
-            } else if (hasSummary) {
-                Text(
-                    text = summary,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textDecoration = if (isCompleted) {
-                        TextDecoration.LineThrough
-                    } else {
-                        null
-                    },
-                    color = if (isCompleted) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    }
-                )
+            val bodyColor = if (isCompleted) {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            }
+
+            val bodyDecoration = if (isCompleted) TextDecoration.LineThrough else null
+
+            when {
+                hasText -> {
+                    Text(
+                        text = text!!,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = bodyColor,
+                        textDecoration = bodyDecoration
+                    )
+                }
+
+                hasSummary -> {
+                    Text(
+                        text = summary!!,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = bodyColor,
+                        textDecoration = bodyDecoration,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+
+                hasTitle -> {
+                    Text(
+                        text = title!!,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = bodyColor,
+                        textDecoration = bodyDecoration
+                    )
+                }
             }
         }
     }
