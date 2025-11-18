@@ -4,6 +4,7 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Home : Screen("home")
     object Profile : Screen("profile")
+    object Favorites : Screen("favorites")
     object AddRecipe : Screen("add_recipe?tab={tab}") {
         fun createRoute(tab: Int = 0) = "add_recipe?tab=$tab"
     }

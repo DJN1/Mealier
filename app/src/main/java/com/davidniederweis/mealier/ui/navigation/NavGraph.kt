@@ -15,6 +15,7 @@ import com.davidniederweis.mealier.ui.screens.home.HomeScreen
 import com.davidniederweis.mealier.ui.screens.profile.ProfileScreen
 import com.davidniederweis.mealier.ui.screens.recipe.AddRecipeScreen
 import com.davidniederweis.mealier.ui.screens.recipe.EditRecipeScreen
+import com.davidniederweis.mealier.ui.screens.recipe.FavoriteRecipesScreen
 import com.davidniederweis.mealier.ui.screens.recipe.RecipeDetailScreen
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.profile.ProfileState
@@ -145,6 +146,14 @@ fun NavGraph(
                         popUpTo(0) { inclusive = true }
                     }
                 },
+                navController = navController,
+                isAdmin = isAdmin
+            )
+        }
+
+        // Favorites Screen
+        composable(Screen.Favorites.route) {
+            FavoriteRecipesScreen(
                 navController = navController,
                 isAdmin = isAdmin
             )

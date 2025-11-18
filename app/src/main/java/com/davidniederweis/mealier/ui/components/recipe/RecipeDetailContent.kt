@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import com.davidniederweis.mealier.data.model.nutrition.Nutrition
 import com.davidniederweis.mealier.data.model.recipe.RecipeDetail
 import com.davidniederweis.mealier.data.model.recipe.RecipeCategory
 import com.davidniederweis.mealier.data.model.recipe.RecipeTag
@@ -79,6 +80,11 @@ fun RecipeDetailContent(
     val hasParsedIngredients = remember(recipe) {
         recipe.recipeIngredient.any { it.unit != null && it.food != null }
     }
+
+    val nutritionItems = remember(recipe.nutrition) {
+        recipe.nutrition?.let { buildNutritionItems(it) }
+    }
+    val shouldShowNutrition = (recipe.settings?.showNutrition ?: true) && !nutritionItems.isNullOrEmpty()
 
     Column(
         modifier = modifier
@@ -326,6 +332,41 @@ fun RecipeDetailContent(
                 }
             }
 
+            if (shouldShowNutrition && nutritionItems != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Nutrition",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        HorizontalDivider()
+
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            nutritionItems.forEach { (label, value) ->
+                                NutritionValueRow(label = label, value = value)
+                            }
+                        }
+                    }
+                }
+            }
+
 
             // Notes Section
             recipe.notes?.let { notes ->
@@ -443,4 +484,55 @@ private fun hasTimeData(recipe: RecipeDetail): Boolean {
             (!recipe.cookTime.isNullOrBlank()) ||
             (!recipe.performTime.isNullOrBlank()) ||
             (!recipe.totalTime.isNullOrBlank())
+}
+
+@Composable
+private fun NutritionValueRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+private fun buildNutritionItems(nutrition: Nutrition): List<Pair<String, String>> {
+    val entries = mutableListOf<Pair<String, String>>()
+
+    fun addEntry(label: String, value: String?, unit: String?) {
+        val trimmed = value?.trim().orEmpty()
+        if (trimmed.isNotEmpty()) {
+            val displayValue = if (unit.isNullOrBlank() || trimmed.any { it.isLetter() }) {
+                trimmed
+            } else {
+                "$trimmed ${unit.trim()}"
+            }
+            entries.add(label to displayValue)
+        }
+    }
+
+    addEntry("Calories", nutrition.calories, "kcal")
+    addEntry("Fat", nutrition.fatContent, "g")
+    addEntry("Saturated Fat", nutrition.saturatedFatContent, "g")
+    addEntry("Unsaturated Fat", nutrition.unsaturatedFatContent, "g")
+    addEntry("Trans Fat", nutrition.transFatContent, "g")
+    addEntry("Protein", nutrition.proteinContent, "g")
+    addEntry("Carbohydrates", nutrition.carbohydrateContent, "g")
+    addEntry("Fiber", nutrition.fiberContent, "g")
+    addEntry("Sugar", nutrition.sugarContent, "g")
+    addEntry("Cholesterol", nutrition.cholesterolContent, "mg")
+    addEntry("Sodium", nutrition.sodiumContent, "mg")
+
+    return entries
 }

@@ -3,6 +3,7 @@ package com.davidniederweis.mealier.ui.screens.recipe
 import android.content.Intent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -10,9 +11,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -58,6 +61,8 @@ fun RecipeDetailScreen(
 ) {
     val recipeDetailState by viewModel.recipeDetailState.collectAsState()
     val baseUrl by viewModel.baseUrl.collectAsState()
+    val favoriteState by viewModel.favoriteState.collectAsState()
+    val favoriteInProgress by viewModel.favoriteInProgress.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -122,11 +127,31 @@ fun RecipeDetailScreen(
                                 contentDescription = "Share"
                             )
                         }
-                        IconButton(onClick = { /* TODO: Favorite */ }) {
-                            Icon(
-                                imageVector = Icons.Default.FavoriteBorder,
-                                contentDescription = "Favorite"
-                            )
+                        IconButton(
+                            onClick = { viewModel.toggleFavorite() },
+                            enabled = favoriteState != null && !favoriteInProgress
+                        ) {
+                            when {
+                                favoriteInProgress -> {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                }
+                                favoriteState == true -> {
+                                    Icon(
+                                        imageVector = Icons.Default.Favorite,
+                                        contentDescription = "Remove from favorites",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                else -> {
+                                    Icon(
+                                        imageVector = Icons.Default.FavoriteBorder,
+                                        contentDescription = "Add to favorites"
+                                    )
+                                }
+                            }
                         }
                         // Delete button (admin only)
                         if (isAdmin) {

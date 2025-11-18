@@ -67,7 +67,7 @@ fun BottomNavBar(
                 )
             },
             label = { Text("Profile") },
-            selected = currentRoute == Screen.Profile.route,
+            selected = currentRoute == Screen.Profile.route || currentRoute == Screen.Favorites.route,
             onClick = {
                 if (currentRoute != Screen.Profile.route) {
                     navController.navigate(Screen.Profile.route) {

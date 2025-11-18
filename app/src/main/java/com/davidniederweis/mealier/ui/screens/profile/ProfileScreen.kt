@@ -17,6 +17,7 @@ import com.davidniederweis.mealier.ui.components.general.ErrorMessage
 import com.davidniederweis.mealier.ui.components.general.LoadingBox
 import com.davidniederweis.mealier.ui.components.profile.ProfileInfoRow
 import com.davidniederweis.mealier.ui.components.profile.SettingRow
+import com.davidniederweis.mealier.ui.navigation.Screen
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.BiometricsViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.ThemeViewModel
@@ -170,6 +171,18 @@ fun ProfileScreen(
                                 }
                             )
                         }
+                    }
+
+                    Button(
+                        onClick = { navController.navigate(Screen.Favorites.route) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = null
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("View Favorite Recipes")
                     }
 
                     Spacer(modifier = Modifier.weight(1f))

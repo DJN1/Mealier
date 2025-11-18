@@ -3,6 +3,7 @@ package com.davidniederweis.mealier.ui.viewmodel.recipe
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.davidniederweis.mealier.BuildConfig
+import com.davidniederweis.mealier.data.api.UserApi
 import com.davidniederweis.mealier.data.model.category.Category
 import com.davidniederweis.mealier.data.model.recipe.RecipeCategory
 import com.davidniederweis.mealier.data.model.recipe.RecipeDetail
@@ -11,6 +12,7 @@ import com.davidniederweis.mealier.data.model.recipe.RecipeTag
 import com.davidniederweis.mealier.data.model.tag.Tag
 import com.davidniederweis.mealier.data.preferences.ServerPreferences
 import com.davidniederweis.mealier.data.repository.RecipeRepository
+import com.davidniederweis.mealier.util.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +20,8 @@ import kotlinx.coroutines.launch
 
 class RecipeViewModel(
     private val repository: RecipeRepository,
-    private val serverPreferences: ServerPreferences
+    private val serverPreferences: ServerPreferences,
+    private val userApi: UserApi
 ) : ViewModel() {
 
     private val _recipeListState = MutableStateFlow<RecipeListState>(RecipeListState.Idle)
@@ -39,6 +42,15 @@ class RecipeViewModel(
     private val _allTags = MutableStateFlow<List<Tag>>(emptyList())
     val allTags: StateFlow<List<Tag>> = _allTags.asStateFlow()
 
+    private val _favoriteState = MutableStateFlow<Boolean?>(null)
+    val favoriteState: StateFlow<Boolean?> = _favoriteState.asStateFlow()
+
+    private val _favoriteInProgress = MutableStateFlow(false)
+    val favoriteInProgress: StateFlow<Boolean> = _favoriteInProgress.asStateFlow()
+
+    private val _favoriteRecipesState = MutableStateFlow<FavoriteRecipesState>(FavoriteRecipesState.Idle)
+    val favoriteRecipesState: StateFlow<FavoriteRecipesState> = _favoriteRecipesState.asStateFlow()
+
     private var currentPage = 1
     private val perPage = 50
     private var isLoadingMore = false
@@ -47,6 +59,9 @@ class RecipeViewModel(
     private var activeCategoryIds: List<String> = emptyList()
     private var activeTagIds: List<String> = emptyList()
     private var isEndReached = false
+    private var currentRecipeSlug: String? = null
+    private var currentRecipeId: String? = null
+    private var currentUserId: String? = null
 
     init {
         loadRecipes()
@@ -54,6 +69,9 @@ class RecipeViewModel(
         viewModelScope.launch {
             val url = serverPreferences.getServerUrlOnce()
             _baseUrl.value = url.ifBlank { BuildConfig.BASE_URL }
+        }
+        viewModelScope.launch {
+            ensureCurrentUserId()
         }
     }
 
@@ -209,13 +227,18 @@ class RecipeViewModel(
     fun loadRecipeDetail(slug: String) {
         viewModelScope.launch {
             _recipeDetailState.value = RecipeDetailState.Loading
+            _favoriteState.value = null
+            currentRecipeSlug = slug
             try {
                 val recipe = repository.getRecipeBySlug(slug)
                 _recipeDetailState.value = RecipeDetailState.Success(recipe)
+                currentRecipeId = recipe.id
+                fetchFavoriteStatus(recipe.id)
             } catch (e: Exception) {
                 _recipeDetailState.value = RecipeDetailState.Error(
                     e.message ?: "Failed to load recipe details"
                 )
+                Logger.e("RecipeViewModel", "Failed to load recipe details", e)
             }
         }
     }
@@ -289,4 +312,109 @@ class RecipeViewModel(
             }
         }
     }
+
+    fun loadFavoriteRecipes() {
+        viewModelScope.launch {
+            _favoriteRecipesState.value = FavoriteRecipesState.Loading
+            try {
+                val userId = ensureCurrentUserId()
+                    ?: throw IllegalStateException("Unable to load user information")
+
+                val response = userApi.getFavorites(userId)
+                val favoriteIds = response.ratings
+                    .filter { it.isFavorite != false }
+                    .map { it.recipeId }
+                    .distinct()
+
+                if (favoriteIds.isEmpty()) {
+                    _favoriteRecipesState.value = FavoriteRecipesState.Success(emptyList())
+                    return@launch
+                }
+
+                val recipes = favoriteIds.mapNotNull { recipeId ->
+                    runCatching { repository.getRecipeBySlug(recipeId) }
+                        .getOrElse {
+                            Logger.w(
+                                "RecipeViewModel",
+                                "Failed to fetch favorite recipe $recipeId: ${it.message}"
+                            )
+                            null
+                        }?.toSummary()
+                }
+
+                _favoriteRecipesState.value = FavoriteRecipesState.Success(recipes)
+            } catch (e: Exception) {
+                Logger.e("RecipeViewModel", "Failed to load favorite recipes", e)
+                _favoriteRecipesState.value = FavoriteRecipesState.Error(
+                    e.message ?: "Failed to load favorite recipes"
+                )
+            }
+        }
+    }
+
+    fun toggleFavorite() {
+        if (_favoriteInProgress.value) return
+        val slug = currentRecipeSlug ?: return
+
+        viewModelScope.launch {
+            val userId = ensureCurrentUserId() ?: return@launch
+            val currentFavorite = _favoriteState.value ?: return@launch
+
+            _favoriteInProgress.value = true
+            try {
+                if (currentFavorite) {
+                    userApi.removeFavorite(userId, slug)
+                } else {
+                    userApi.addFavorite(userId, slug)
+                }
+                _favoriteState.value = !currentFavorite
+            } catch (e: Exception) {
+                Logger.e("RecipeViewModel", "Failed to toggle favorite", e)
+            } finally {
+                _favoriteInProgress.value = false
+            }
+        }
+    }
+
+    private fun fetchFavoriteStatus(recipeId: String) {
+        viewModelScope.launch {
+            try {
+                val summary = userApi.getCurrentUserRatingForRecipe(recipeId)
+                _favoriteState.value = summary.isFavorite ?: false
+            } catch (e: Exception) {
+                Logger.w("RecipeViewModel", "Failed to fetch favorite status: ${e.message}")
+                _favoriteState.value = false
+            }
+        }
+    }
+
+    private suspend fun ensureCurrentUserId(): String? {
+        currentUserId?.let { return it }
+        return try {
+            val user = userApi.getCurrentUser()
+            currentUserId = user.id
+            user.id
+        } catch (e: Exception) {
+            Logger.e("RecipeViewModel", "Unable to fetch current user", e)
+            null
+        }
+    }
+}
+
+private fun RecipeDetail.toSummary(): RecipeSummary {
+    return RecipeSummary(
+        id = id,
+        name = name,
+        slug = slug,
+        image = image,
+        description = description,
+        rating = rating,
+        prepTime = prepTime,
+        totalTime = totalTime,
+        recipeYield = recipeYield,
+        dateAdded = dateAdded,
+        dateUpdated = dateUpdated,
+        recipeCategory = recipeCategory,
+        tags = tags
+    )
 }
