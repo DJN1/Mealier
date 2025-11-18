@@ -9,7 +9,7 @@ data class RecipeIngredient(
     val unit: RecipeIngredientUnit? = null,
     val food: RecipeIngredientFood? = null,
     val disableAmount: Boolean = false,
-    val quantity: Double = 1.0,
+    val quantity: Double = 0.0,
     val display: String? = null,
     val originalText: String? = null,
     val referenceId: String? = null

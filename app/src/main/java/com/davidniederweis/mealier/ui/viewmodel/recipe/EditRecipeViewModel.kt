@@ -330,7 +330,7 @@ class EditRecipeViewModel(
                                 unit = input.unit?.let { RecipeIngredientUnit(id = it.id, name = it.name) },
                                 food = RecipeIngredientFood(id = input.food.id, name = input.food.name),
                                 disableAmount = false,
-                                quantity = input.quantity.toDoubleOrNull() ?: 1.0,
+                                quantity = input.quantity.toDoubleOrNull() ?: 0.0,
                                 display = "${input.quantity} ${input.unit?.name ?: ""} ${input.food.name}",
                                 originalText = "",
                                 referenceId = ""
