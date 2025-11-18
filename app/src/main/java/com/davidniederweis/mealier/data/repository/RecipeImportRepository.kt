@@ -11,7 +11,7 @@ class RecipeImportRepository(private val recipeApi: RecipeApi) {
             val response = recipeApi.createRecipeFromUrl(request)
             Result.Success(response)
         } catch (e: Exception) {
-            Result.Error(e.message ?: "An unknown error occurred while importing the recipe.", e)
+            Result.Error(e.message ?: "An unknown error occurred while importing the recipe.")
         }
     }
 }

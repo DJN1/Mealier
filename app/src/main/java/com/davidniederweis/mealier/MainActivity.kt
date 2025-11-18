@@ -27,8 +27,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val application = application as MealierApplication
-        recipeImportViewModel = ViewModelProvider(this, application.viewModelFactory)
-            .get(RecipeImportViewModel::class.java)
+        recipeImportViewModel = ViewModelProvider(this, application.viewModelFactory)[RecipeImportViewModel::class.java]
 
         setContent {
             val themeViewModel: ThemeViewModel = androidx.lifecycle.viewmodel.compose.viewModel(

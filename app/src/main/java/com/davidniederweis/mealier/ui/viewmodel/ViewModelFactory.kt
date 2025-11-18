@@ -13,7 +13,6 @@ import com.davidniederweis.mealier.data.repository.RecipeRepository
 import com.davidniederweis.mealier.data.repository.UserRepository
 import com.davidniederweis.mealier.ui.viewmodel.admin.CookbookManagementViewModel
 import com.davidniederweis.mealier.ui.viewmodel.admin.CreateCookbookViewModel
-import com.davidniederweis.mealier.ui.viewmodel.admin.EditCookbookViewModel
 import com.davidniederweis.mealier.ui.viewmodel.admin.FoodManagementViewModel
 import com.davidniederweis.mealier.ui.viewmodel.admin.HouseholdManagementViewModel
 import com.davidniederweis.mealier.ui.viewmodel.admin.HouseholdSettingsViewModel
@@ -99,7 +98,7 @@ class ViewModelFactory(
             }
 
             modelClass.isAssignableFrom(HouseholdManagementViewModel::class.java) -> {
-                HouseholdManagementViewModel(recipeRepository) as T
+                HouseholdManagementViewModel() as T
             }
 
             modelClass.isAssignableFrom(HouseholdSettingsViewModel::class.java) -> {

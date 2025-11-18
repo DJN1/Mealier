@@ -25,10 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import java.util.Locale
 
 @Composable
 fun ServingsCard(
-    servingsDisplay: String?,
     baseServings: Double,
     currentServings: Double,
     onServingsChange: (Double) -> Unit,
@@ -166,7 +166,7 @@ private fun formatServings(servings: Double): String {
         ""
     } else {
         // Format to 3 decimal places and remove trailing zeros
-        val formatted = "%.3f".format(fracPart)
+        val formatted = String.format(Locale.ROOT, "%.3f", fracPart)
         formatted.trimEnd('0').trimEnd('.')
     }
     
@@ -221,7 +221,7 @@ private fun formatMultiplier(multiplier: Double): String {
         intPart > 0 -> intPart.toString()
         fracStr.isNotEmpty() -> fracStr
         else -> {
-            val formatted = "%.3f".format(multiplier)
+            val formatted = String.format(Locale.ROOT, "%.3f", multiplier)
             formatted.trimEnd('0').trimEnd('.')
         }
     }

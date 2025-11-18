@@ -1,9 +1,16 @@
 package com.davidniederweis.mealier.ui.components.recipe
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
@@ -14,6 +21,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.davidniederweis.mealier.data.model.ingredient.RecipeIngredient
+import java.util.Locale
 
 
 @Composable
@@ -190,7 +198,7 @@ private fun formatQuantityWithFraction(quantity: Double): String {
         ""
     } else {
         // Format to 3 decimal places and remove trailing zeros
-        val formatted = "%.3f".format(fracPart)
+        val formatted = String.format(Locale.ROOT, "%.3f", fracPart)
         formatted.trimEnd('0').trimEnd('.')
     }
     

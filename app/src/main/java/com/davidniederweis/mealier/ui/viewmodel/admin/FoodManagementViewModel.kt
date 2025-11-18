@@ -82,7 +82,7 @@ class FoodManagementViewModel(
         }
     }
 
-    fun updateFood(food: Food) {
+    fun updateFood() {
         viewModelScope.launch {
             try {
                 // recipeRepository.updateFood(food) // There is no update food method in the api

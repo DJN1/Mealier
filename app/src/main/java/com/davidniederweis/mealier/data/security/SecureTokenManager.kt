@@ -8,8 +8,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.davidniederweis.mealier.util.Logger
 import com.google.crypto.tink.Aead
-import com.google.crypto.tink.KeyTemplates
+import com.google.crypto.tink.RegistryConfiguration
 import com.google.crypto.tink.aead.AeadConfig
+import com.google.crypto.tink.aead.AesGcmKeyManager
 import com.google.crypto.tink.integration.android.AndroidKeysetManager
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -33,13 +34,13 @@ class SecureDataStoreManager(private val context: Context) {
             // Create or retrieve keyset
             val keysetHandle = AndroidKeysetManager.Builder()
                 .withSharedPref(context, KEYSET_NAME, KEYSET_PREF_NAME)
-                .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
+                .withKeyTemplate(AesGcmKeyManager.aes256GcmTemplate())
                 .withMasterKeyUri(MASTER_KEY_URI)
                 .build()
                 .keysetHandle
 
             Logger.i("SecureDataStore", "Tink initialized successfully")
-            keysetHandle.getPrimitive(Aead::class.java)
+            keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
         } catch (e: Exception) {
             Logger.e("SecureDataStore", "Failed to initialize Tink, attempting recovery", e)
             
@@ -55,13 +56,13 @@ class SecureDataStoreManager(private val context: Context) {
                 AeadConfig.register()
                 val keysetHandle = AndroidKeysetManager.Builder()
                     .withSharedPref(context, KEYSET_NAME, KEYSET_PREF_NAME)
-                    .withKeyTemplate(KeyTemplates.get("AES256_GCM"))
+                    .withKeyTemplate(AesGcmKeyManager.aes256GcmTemplate())
                     .withMasterKeyUri(MASTER_KEY_URI)
                     .build()
                     .keysetHandle
                 
                 Logger.i("SecureDataStore", "Tink recovery successful")
-                keysetHandle.getPrimitive(Aead::class.java)
+                keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead::class.java)
             } catch (recoveryException: Exception) {
                 Logger.e("SecureDataStore", "Tink recovery failed", recoveryException)
                 null
@@ -76,8 +77,8 @@ class SecureDataStoreManager(private val context: Context) {
                 Logger.e("SecureDataStore", "Cannot encrypt: Tink not initialized")
                 throw IllegalStateException("Tink not initialized")
             }
-            val ciphertext = aeadInstance.encrypt(plaintext.toByteArray(), null)
-            android.util.Base64.encodeToString(ciphertext, android.util.Base64.DEFAULT)
+            val ciphertext = aeadInstance.encrypt(plaintext.toByteArray(Charsets.UTF_8), null)
+            android.util.Base64.encodeToString(ciphertext, android.util.Base64.NO_WRAP)
         } catch (e: Exception) {
             Logger.e("SecureDataStore", "Encryption failed", e)
             throw e
@@ -93,7 +94,7 @@ class SecureDataStoreManager(private val context: Context) {
             }
             val decoded = android.util.Base64.decode(ciphertext, android.util.Base64.DEFAULT)
             val plaintext = aeadInstance.decrypt(decoded, null)
-            String(plaintext)
+            String(plaintext, Charsets.UTF_8)
         } catch (e: Exception) {
             Logger.e("SecureDataStore", "Decryption failed", e)
             throw e
@@ -206,18 +207,6 @@ class SecureDataStoreManager(private val context: Context) {
         } catch (e: Exception) {
             Logger.e("SecureDataStore", "Failed to get password", e)
             null
-        }
-    }
-
-    // Clear All Data
-    suspend fun clearAll() {
-        try {
-            context.dataStore.edit { prefs ->
-                prefs.clear()
-            }
-            Logger.i("SecureDataStore", "All data cleared successfully")
-        } catch (e: Exception) {
-            Logger.e("SecureDataStore", "Failed to clear all data", e)
         }
     }
 

@@ -63,9 +63,6 @@ fun NavGraph(
                 onRecipeClick = { slug ->
                     navController.navigate(Screen.RecipeDetail.createRoute(slug))
                 },
-                onAddRecipeClick = {
-                    navController.navigate(Screen.AddRecipe.route)
-                },
                 navController = navController,
                 isAdmin = isAdmin
             )

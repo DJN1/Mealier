@@ -66,7 +66,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun HomeScreen(
     onRecipeClick: (String) -> Unit,
-    onAddRecipeClick: () -> Unit,
     navController: NavController,
     isAdmin: Boolean,
     viewModel: RecipeViewModel = appViewModel()

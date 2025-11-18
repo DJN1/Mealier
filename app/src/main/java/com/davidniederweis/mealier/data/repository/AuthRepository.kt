@@ -31,13 +31,8 @@ class AuthRepository(
             emit(Result.Success(user))
         } catch (e: Exception) {
             Logger.e("AuthRepository", "Login error", e)
-            emit(Result.Error(e.message ?: "Login failed", e))
+            emit(Result.Error(e.message ?: "Login failed"))
         }
-    }
-
-    suspend fun logout() {
-        Logger.i("AuthRepository", "Logging out")
-        tokenManager.clearAll()
     }
 
     suspend fun isLoggedIn(): Boolean {
@@ -74,9 +69,9 @@ class AuthRepository(
             if (is401) {
                 Logger.w("AuthRepository", "Authentication failed, clearing token")
                 tokenManager.clearToken()
-                emit(Result.Error("Session expired. Please login again.", e))
+                emit(Result.Error("Session expired. Please login again."))
             } else {
-                emit(Result.Error(e.message ?: "Failed to get user", e))
+                emit(Result.Error(e.message ?: "Failed to get user"))
             }
         }
     }

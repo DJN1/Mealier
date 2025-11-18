@@ -164,7 +164,7 @@ fun FoodManagementScreen(
                 if (selectedFood == null) {
                     viewModel.createFood(it)
                 } else {
-                    viewModel.updateFood(it)
+                    viewModel.updateFood()
                 }
                 showDialog = false
                 selectedFood = null

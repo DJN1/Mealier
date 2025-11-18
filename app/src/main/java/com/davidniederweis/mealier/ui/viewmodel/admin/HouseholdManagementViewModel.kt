@@ -2,8 +2,6 @@ package com.davidniederweis.mealier.ui.viewmodel.admin
 
 import androidx.lifecycle.ViewModel
 import com.davidniederweis.mealier.data.model.household.Household
-import com.davidniederweis.mealier.data.repository.RecipeRepository
-import kotlinx.coroutines.flow.MutableStateFlow
 
 sealed class HouseholdManagementState {
     object Idle : HouseholdManagementState()
@@ -13,9 +11,4 @@ sealed class HouseholdManagementState {
 }
 
 class HouseholdManagementViewModel(
-    private val recipeRepository: RecipeRepository
-) : ViewModel() {
-
-    private val _householdManagementState = MutableStateFlow<HouseholdManagementState>(HouseholdManagementState.Idle)
-
-}
+) : ViewModel()
