@@ -41,7 +41,7 @@ class RecipeRepository(
         requireAllTags: Boolean = false,
         requireAllTools: Boolean = false,
         requireAllFoods: Boolean = false
-    ): List<RecipeSummary> {
+    ): RecipeListResponse {
         return recipeApi.getRecipes(
             page = page,
             perPage = perPage,
@@ -58,7 +58,7 @@ class RecipeRepository(
             requireAllTags = requireAllTags,
             requireAllTools = requireAllTools,
             requireAllFoods = requireAllFoods
-        ).items
+        )
     }
 
     suspend fun getRecipeBySlug(slug: String): RecipeDetail {
@@ -69,12 +69,12 @@ class RecipeRepository(
         query: String,
         page: Int = 1,
         perPage: Int = 50
-    ): List<RecipeSummary> {
+    ): RecipeListResponse {
         return recipeApi.getRecipes(
             page = page,
             perPage = perPage,
             search = query
-        ).items
+        )
     }
 
     suspend fun getRecipesByCookbook(cookbookSlug: String): List<RecipeSummary> {
@@ -83,7 +83,7 @@ class RecipeRepository(
             orderBy = "name",
             orderDirection = "asc",
             orderByNullPosition = "first"
-        )
+        ).items
     }
 
     suspend fun getCookbooks(): List<Cookbook> {

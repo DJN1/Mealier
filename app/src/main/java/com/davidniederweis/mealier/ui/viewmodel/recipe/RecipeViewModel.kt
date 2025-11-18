@@ -43,6 +43,10 @@ class RecipeViewModel(
     private val perPage = 50
     private var isLoadingMore = false
     private val allRecipes = mutableListOf<RecipeSummary>()
+    private val loadedRecipeIds = mutableSetOf<String>()
+    private var activeCategoryIds: List<String> = emptyList()
+    private var activeTagIds: List<String> = emptyList()
+    private var isEndReached = false
 
     init {
         loadRecipes()
@@ -72,25 +76,48 @@ class RecipeViewModel(
         if (refresh) {
             currentPage = 1
             allRecipes.clear()
+            loadedRecipeIds.clear()
+            isLoadingMore = false
+            isEndReached = false
         }
+
+        activeCategoryIds = categoryIds
+        activeTagIds = tagIds
 
         viewModelScope.launch {
             _recipeListState.value = RecipeListState.Loading
             try {
-                val recipes = repository.getAllRecipes(
+                val response = repository.getAllRecipes(
                     page = currentPage,
                     perPage = perPage,
                     search = _searchQuery.value.ifBlank { null },
-                    categories = categoryIds.joinToString(","),
-                    tags = tagIds.joinToString(",")
+                    categories = categoryIds.joinToString(",").ifBlank { null },
+                    tags = tagIds.joinToString(",").ifBlank { null }
                 )
 
-                if (refresh) {
+                if (response.page == 1) {
                     allRecipes.clear()
+                    loadedRecipeIds.clear()
                 }
-                allRecipes.addAll(recipes)
 
-                _recipeListState.value = RecipeListState.Success(allRecipes.toList())
+                currentPage = response.page
+
+                val newRecipes = response.items.filter { recipe ->
+                    if (loadedRecipeIds.contains(recipe.id)) {
+                        false
+                    } else {
+                        loadedRecipeIds.add(recipe.id)
+                        true
+                    }
+                }
+                allRecipes.addAll(newRecipes)
+
+                isEndReached = response.page >= response.totalPages || response.items.isEmpty()
+
+                _recipeListState.value = RecipeListState.Success(
+                    recipes = allRecipes.toList(),
+                    hasMore = !isEndReached
+                )
             } catch (e: Exception) {
                 _recipeListState.value = RecipeListState.Error(
                     e.message ?: "Failed to load recipes"
@@ -104,7 +131,14 @@ class RecipeViewModel(
             _recipeListState.value = RecipeListState.Loading
             try {
                 val recipes = repository.getRecipesByCookbook(cookbookSlug)
-                _recipeListState.value = RecipeListState.Success(recipes)
+                allRecipes.clear()
+                loadedRecipeIds.clear()
+                allRecipes.addAll(recipes)
+                loadedRecipeIds.addAll(recipes.map { it.id })
+                currentPage = 1
+                isEndReached = true
+                isLoadingMore = false
+                _recipeListState.value = RecipeListState.Success(recipes, hasMore = false)
             } catch (e: Exception) {
                 _recipeListState.value = RecipeListState.Error(e.message ?: "Failed to load cookbook recipes")
             }
@@ -112,28 +146,52 @@ class RecipeViewModel(
     }
 
     fun clearRecipes() {
-        _recipeListState.value = RecipeListState.Success(emptyList())
+        allRecipes.clear()
+        loadedRecipeIds.clear()
+        currentPage = 1
+        isLoadingMore = false
+        isEndReached = false
+        _recipeListState.value = RecipeListState.Success(emptyList(), hasMore = false)
     }
 
     fun loadMoreRecipes() {
-        if (isLoadingMore) return
+        if (isLoadingMore || isEndReached) return
 
+        val nextPage = currentPage + 1
         isLoadingMore = true
-        currentPage++
 
         viewModelScope.launch {
             try {
-                val recipes = repository.getAllRecipes(
-                    page = currentPage,
+                val response = repository.getAllRecipes(
+                    page = nextPage,
                     perPage = perPage,
-                    search = _searchQuery.value.ifBlank { null }
+                    search = _searchQuery.value.ifBlank { null },
+                    categories = activeCategoryIds.joinToString(",").ifBlank { null },
+                    tags = activeTagIds.joinToString(",").ifBlank { null }
                 )
 
-                allRecipes.addAll(recipes)
-                _recipeListState.value = RecipeListState.Success(allRecipes.toList())
+                val newRecipes = response.items.filter { recipe ->
+                    if (loadedRecipeIds.contains(recipe.id)) {
+                        false
+                    } else {
+                        loadedRecipeIds.add(recipe.id)
+                        true
+                    }
+                }
+
+                if (newRecipes.isNotEmpty()) {
+                    allRecipes.addAll(newRecipes)
+                    currentPage = response.page
+                }
+
+                isEndReached = response.page >= response.totalPages || newRecipes.isEmpty()
+
+                _recipeListState.value = RecipeListState.Success(
+                    recipes = allRecipes.toList(),
+                    hasMore = !isEndReached
+                )
             } catch (_: Exception) {
-                // Don't change state on pagination error, just reset page
-                currentPage--
+                // Ignore pagination errors but leave the current data untouched
             } finally {
                 isLoadingMore = false
             }
@@ -141,7 +199,11 @@ class RecipeViewModel(
     }
 
     fun retryLoadRecipes() {
-        loadRecipes(refresh = true)
+        loadRecipes(
+            refresh = true,
+            categoryIds = activeCategoryIds,
+            tagIds = activeTagIds
+        )
     }
 
     fun loadRecipeDetail(slug: String) {
@@ -160,31 +222,19 @@ class RecipeViewModel(
 
     fun searchRecipes(query: String) {
         _searchQuery.value = query
-        currentPage = 1
-        allRecipes.clear()
-
-        viewModelScope.launch {
-            _recipeListState.value = RecipeListState.Loading
-            try {
-                val recipes = if (query.isBlank()) {
-                    repository.getAllRecipes(page = 1, perPage = perPage)
-                } else {
-                    repository.searchRecipes(query, page = 1, perPage = perPage)
-                }
-
-                allRecipes.clear()
-                allRecipes.addAll(recipes)
-                _recipeListState.value = RecipeListState.Success(allRecipes.toList())
-            } catch (e: Exception) {
-                _recipeListState.value = RecipeListState.Error(
-                    e.message ?: "Failed to search recipes"
-                )
-            }
-        }
+        loadRecipes(
+            refresh = true,
+            categoryIds = activeCategoryIds,
+            tagIds = activeTagIds
+        )
     }
 
     fun refresh() {
-        loadRecipes(refresh = true)
+        loadRecipes(
+            refresh = true,
+            categoryIds = activeCategoryIds,
+            tagIds = activeTagIds
+        )
     }
 
     private fun updateRecipe(slug: String, updateRequest: RecipeDetail) {

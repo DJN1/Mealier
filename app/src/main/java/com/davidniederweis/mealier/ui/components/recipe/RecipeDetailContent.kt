@@ -137,14 +137,15 @@ fun RecipeDetailContent(
                         FlowRow(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy((-6).dp)
                         ) {
                             recipe.recipeCategory?.forEach { category: RecipeCategory ->
                                 AssistChip(
                                     onClick = { /* Disabled */ },
                                     label = { Text(category.name) },
                                     colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        labelColor = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                 )
                             }
@@ -173,7 +174,7 @@ fun RecipeDetailContent(
                         FlowRow(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            verticalArrangement = Arrangement.spacedBy((-6).dp)
                         ) {
                             recipe.tags?.forEach { tag: RecipeTag ->
                                 AssistChip(

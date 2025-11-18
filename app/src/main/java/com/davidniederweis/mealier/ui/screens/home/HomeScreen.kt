@@ -44,6 +44,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.davidniederweis.mealier.data.model.cookbook.Cookbook
@@ -278,20 +279,34 @@ fun HomeScreen(
                                     )
                                 }
 
-                                if (state.recipes.size >= 50 && page == 0) {
-                                    item(span = { GridItemSpan(maxLineSpan) }) {
-                                        LaunchedEffect(Unit) {
-                                            viewModel.loadMoreRecipes()
-                                        }
+                                if (page == 0 && state.recipes.isNotEmpty()) {
+                                    if (state.hasMore) {
+                                        item(span = { GridItemSpan(maxLineSpan) }) {
+                                            LaunchedEffect(Unit) {
+                                                viewModel.loadMoreRecipes()
+                                            }
 
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            CircularProgressIndicator(
-                                                modifier = Modifier.size(32.dp)
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(16.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                CircularProgressIndicator(
+                                                    modifier = Modifier.size(32.dp)
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        item(span = { GridItemSpan(maxLineSpan) }) {
+                                            Text(
+                                                text = "No more recipes available",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                textAlign = TextAlign.Center,
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 16.dp)
                                             )
                                         }
                                     }
