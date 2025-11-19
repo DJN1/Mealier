@@ -1,14 +1,16 @@
 package com.davidniederweis.mealier.data.model.ingredient
 
-import com.google.gson.annotations.SerializedName
+import androidx.annotation.Keep
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Keep
 @Serializable
 data class CreateIngredientUnitRequest(
-    @SerializedName("id")
+    @SerialName("id")
     val id: String,
 
-    @SerializedName("name")
+    @SerialName("name")
     val name: String
 )
 

@@ -81,6 +81,12 @@ class EditRecipeViewModel(
     private val _imageUrl = MutableStateFlow("")
     override val imageUrl: StateFlow<String> = _imageUrl.asStateFlow()
 
+    private val _isParsing = MutableStateFlow(false)
+    override val isParsing: StateFlow<Boolean> = _isParsing.asStateFlow()
+
+    private val _resolutionQueue = MutableStateFlow<List<IngredientResolution>>(emptyList())
+    override val resolutionQueue: StateFlow<List<IngredientResolution>> = _resolutionQueue.asStateFlow()
+
     init {
         loadUnitsAndFoods()
     }
@@ -146,6 +152,7 @@ class EditRecipeViewModel(
                                 foods.find { it.id == food.id }
                             },
                             note = ingredient.note ?: "",
+                            originalText = ingredient.display ?: ingredient.originalText ?: "",
                             referenceId = ingredient.referenceId
                         )
                     }
@@ -302,6 +309,102 @@ class EditRecipeViewModel(
         }
     }
 
+    // Parse ingredients
+    override fun parseIngredients() {
+        viewModelScope.launch {
+            _isParsing.value = true
+            
+            try {
+                val currentIngredients = _ingredients.value
+                val indicesToParse = currentIngredients.indices.filter { index ->
+                    val item = currentIngredients[index]
+                    // Parse if food is missing and we have some text
+                    item.food == null && item.originalText.isNotBlank()
+                }
+
+                if (indicesToParse.isEmpty()) {
+                    Logger.i("EditRecipeViewModel", "No ingredients to parse")
+                    _isParsing.value = false
+                    return@launch
+                }
+
+                val textsToParse = indicesToParse.map { currentIngredients[it].originalText }
+                Logger.d("EditRecipeViewModel", "Parsing ingredients: $textsToParse")
+                
+                val parsedResults = repository.parseIngredients(textsToParse)
+                
+                // Create a mutable copy to update
+                val updatedIngredients = currentIngredients.toMutableList()
+                val unresolved = mutableListOf<IngredientResolution>()
+                
+                indicesToParse.zip(parsedResults).forEach { (index, parsed) ->
+                    val ingredient = parsed.ingredient
+                    // Map back to IngredientInput
+                    // We try to find matching Unit and Food in our lists
+                    val unitObj = ingredient.unit?.let { u -> 
+                        _units.value.find { it.id == u.id } ?: _units.value.find { it.name.equals(u.name, ignoreCase = true) }
+                    }
+                    
+                    val foodObj = ingredient.food?.let { f ->
+                        _foods.value.find { it.id == f.id } ?: _foods.value.find { it.name.equals(f.name, ignoreCase = true) }
+                    }
+
+                    if (foodObj == null && ingredient.food != null) {
+                        unresolved.add(IngredientResolution(
+                            index = index,
+                            parsed = parsed,
+                            originalInput = currentIngredients[index]
+                        ))
+                    } else {
+                        updatedIngredients[index] = updatedIngredients[index].copy(
+                            quantity = if (ingredient.quantity > 0) ingredient.quantity.toString() else "",
+                            unit = unitObj,
+                            food = foodObj,
+                            note = ingredient.note ?: "",
+                            // Keep original text if available
+                            originalText = ingredient.originalText ?: updatedIngredients[index].originalText
+                        )
+                    }
+                }
+                
+                _ingredients.value = updatedIngredients
+                _resolutionQueue.value = unresolved
+                
+                Logger.i("EditRecipeViewModel", "Successfully parsed and updated ingredients")
+                
+            } catch (e: Exception) {
+                Logger.e("EditRecipeViewModel", "Error parsing ingredients: ${e.message}", e)
+            } finally {
+                _isParsing.value = false
+            }
+        }
+    }
+    
+    override fun resolveIngredient(resolution: IngredientResolution, acceptedIngredient: IngredientInput) {
+        val index = resolution.index
+        val currentList = _ingredients.value.toMutableList()
+        
+        if (index in currentList.indices) {
+            currentList[index] = acceptedIngredient
+            _ingredients.value = currentList
+        }
+        
+        // Remove from queue
+        _resolutionQueue.value = _resolutionQueue.value.filter { it.index != resolution.index }
+    }
+
+    override fun discardResolution() {
+        if (_resolutionQueue.value.isNotEmpty()) {
+            val current = _resolutionQueue.value.first()
+            _resolutionQueue.value = _resolutionQueue.value.filter { it.index != current.index }
+        }
+    }
+
+    override fun cancelParsing() {
+        _resolutionQueue.value = emptyList()
+        _isParsing.value = false
+    }
+
     // Update recipe
     fun updateRecipe() {
         val original = originalRecipe
@@ -354,7 +457,7 @@ class EditRecipeViewModel(
                                 disableAmount = false,
                                 quantity = input.quantity.toDoubleOrNull() ?: 0.0,
                                 display = "${input.quantity} ${input.unit?.name ?: ""} ${input.food.name}",
-                                originalText = "",
+                                originalText = input.originalText.takeIf { it.isNotBlank() },
                                 referenceId = input.referenceId ?: UUID.randomUUID().toString().replace("-", "")
                             )
                         } else {

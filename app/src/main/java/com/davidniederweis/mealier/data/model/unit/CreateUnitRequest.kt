@@ -1,28 +1,30 @@
 package com.davidniederweis.mealier.data.model.unit
 
-import com.google.gson.annotations.SerializedName
+import androidx.annotation.Keep
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Keep
 @Serializable
 data class CreateUnitRequest(
-    @SerializedName("name")
+    @SerialName("name")
     val name: String,
 
-    @SerializedName("pluralName")
+    @SerialName("pluralName")
     val pluralName: String? = null,
 
-    @SerializedName("description")
+    @SerialName("description")
     val description: String? = null,
 
-    @SerializedName("abbreviation")
+    @SerialName("abbreviation")
     val abbreviation: String? = null,
 
-    @SerializedName("pluralAbbreviation")
+    @SerialName("pluralAbbreviation")
     val pluralAbbreviation: String? = null,
 
-    @SerializedName("useAbbreviation")
+    @SerialName("useAbbreviation")
     val useAbbreviation: Boolean = false,
 
-    @SerializedName("fraction")
+    @SerialName("fraction")
     val fraction: Boolean = true
 )

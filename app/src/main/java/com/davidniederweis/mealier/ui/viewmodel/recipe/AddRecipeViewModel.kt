@@ -75,6 +75,12 @@ class AddRecipeViewModel(
     private val _recipeUrl = MutableStateFlow("")
     val recipeUrl: StateFlow<String> = _recipeUrl.asStateFlow()
 
+    private val _isParsing = MutableStateFlow(false)
+    override val isParsing: StateFlow<Boolean> = _isParsing.asStateFlow()
+
+    private val _resolutionQueue = MutableStateFlow<List<IngredientResolution>>(emptyList())
+    override val resolutionQueue: StateFlow<List<IngredientResolution>> = _resolutionQueue.asStateFlow()
+
     init {
         loadUnitsAndFoods()
     }
@@ -211,6 +217,95 @@ class AddRecipeViewModel(
         }
     }
 
+    // Parse ingredients
+    override fun parseIngredients() {
+        viewModelScope.launch {
+            _isParsing.value = true
+            try {
+                val currentIngredients = _ingredients.value
+                val indicesToParse = currentIngredients.indices.filter { index ->
+                    val item = currentIngredients[index]
+                    item.food == null && item.originalText.isNotBlank()
+                }
+
+                if (indicesToParse.isEmpty()) {
+                    _isParsing.value = false
+                    return@launch
+                }
+
+                val textsToParse = indicesToParse.map { currentIngredients[it].originalText }
+                val parsedResults = repository.parseIngredients(textsToParse)
+                
+                val updatedIngredients = currentIngredients.toMutableList()
+                val unresolved = mutableListOf<IngredientResolution>()
+                
+                indicesToParse.zip(parsedResults).forEach { (index, parsed) ->
+                    val ingredient = parsed.ingredient
+                    
+                    // Try to match unit and food
+                    val unitObj = ingredient.unit?.let { u -> 
+                        _units.value.find { it.id == u.id } ?: _units.value.find { it.name.equals(u.name, ignoreCase = true) }
+                    }
+                    val foodObj = ingredient.food?.let { f ->
+                        _foods.value.find { it.id == f.id } ?: _foods.value.find { it.name.equals(f.name, ignoreCase = true) }
+                    }
+
+                    if (foodObj == null && ingredient.food != null) {
+                        // We have a parsed food name but couldn't map it. Queue for resolution.
+                        unresolved.add(IngredientResolution(
+                            index = index,
+                            parsed = parsed,
+                            originalInput = currentIngredients[index]
+                        ))
+                    } else {
+                        // Mapped successfully or no food parsed (maybe just notes/quantities)
+                        updatedIngredients[index] = updatedIngredients[index].copy(
+                            quantity = if (ingredient.quantity > 0) ingredient.quantity.toString() else "",
+                            unit = unitObj,
+                            food = foodObj,
+                            note = ingredient.note ?: "",
+                            originalText = ingredient.originalText ?: updatedIngredients[index].originalText
+                        )
+                    }
+                }
+                
+                _ingredients.value = updatedIngredients
+                _resolutionQueue.value = unresolved
+                
+                Logger.i("AddRecipeViewModel", "Parsed ingredients: ${parsedResults.size}, Unresolved: ${unresolved.size}")
+            } catch (e: Exception) {
+                Logger.e("AddRecipeViewModel", "Error parsing ingredients: ${e.message}", e)
+            } finally {
+                _isParsing.value = false
+            }
+        }
+    }
+
+    override fun resolveIngredient(resolution: IngredientResolution, acceptedIngredient: IngredientInput) {
+        val index = resolution.index
+        val currentList = _ingredients.value.toMutableList()
+        
+        if (index in currentList.indices) {
+            currentList[index] = acceptedIngredient
+            _ingredients.value = currentList
+        }
+        
+        // Remove from queue
+        _resolutionQueue.value = _resolutionQueue.value.filter { it.index != resolution.index }
+    }
+
+    override fun discardResolution() {
+        if (_resolutionQueue.value.isNotEmpty()) {
+            val current = _resolutionQueue.value.first()
+            _resolutionQueue.value = _resolutionQueue.value.filter { it.index != current.index }
+        }
+    }
+
+    override fun cancelParsing() {
+        _resolutionQueue.value = emptyList()
+        _isParsing.value = false
+    }
+
     // Create recipe manually
     fun createManualRecipe() {
         if (_recipeName.value.isBlank()) {
@@ -231,7 +326,8 @@ class AddRecipeViewModel(
                             quantity = ingredient.quantity.toDoubleOrNull(),
                             unit = ingredient.unit?.let { CreateIngredientUnitRequest(it.id!!, it.name) },
                             food = CreateIngredientFoodRequest(ingredient.food!!.id!!, ingredient.food.name),
-                            note = ingredient.note.takeIf { it.isNotBlank() }
+                            note = ingredient.note.takeIf { it.isNotBlank() },
+                            originalText = ingredient.originalText.takeIf { it.isNotBlank() }
                         )
                     }
 
@@ -322,38 +418,5 @@ class AddRecipeViewModel(
 
 }
 
-// State classes
-sealed class RecipeCreationState {
-    object Idle : RecipeCreationState()
-    object Loading : RecipeCreationState()
-    data class Success(val recipe: RecipeDetail) : RecipeCreationState()
-    data class Error(val message: String) : RecipeCreationState()
-}
+// State classes and Input classes moved to RecipeFormModels.kt
 
-// Input classes for form state
-data class IngredientInput(
-    val quantity: String = "",
-    val unit: RecipeUnit? = null,
-    val food: Food? = null,
-    val note: String = "",
-    val referenceId: String? = null
-)
-
-data class InstructionInput(
-    val title: String = "",
-    val text: String = ""
-)
-
-data class NutritionInput(
-    val calories: String = "",
-    val fatContent: String = "",
-    val proteinContent: String = "",
-    val carbohydrateContent: String = ""
-) {
-    fun hasAnyValue(): Boolean {
-        return calories.isNotBlank() ||
-                fatContent.isNotBlank() ||
-                proteinContent.isNotBlank() ||
-                carbohydrateContent.isNotBlank()
-    }
-}

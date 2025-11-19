@@ -14,6 +14,8 @@ import com.davidniederweis.mealier.data.model.tool.Tool
 import com.davidniederweis.mealier.data.model.unit.CreateUnitRequest
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
 import com.davidniederweis.mealier.data.model.CreateCookBook
+import com.davidniederweis.mealier.data.model.parser.IngredientsRequest
+import com.davidniederweis.mealier.data.model.parser.ParsedIngredient
 import com.davidniederweis.mealier.util.Logger
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -306,6 +308,19 @@ class RecipeRepository(
             Logger.i("RecipeRepository", "Successfully updated cookbook: ${cookbook.name}")
         } catch (e: Exception) {
             Logger.e("RecipeRepository", "Error updating cookbook: ${e.message}", e)
+            throw e
+        }
+    }
+
+    suspend fun parseIngredients(ingredients: List<String>): List<ParsedIngredient> {
+        return try {
+            Logger.d("RecipeRepository", "Parsing ${ingredients.size} ingredients")
+            val request = IngredientsRequest(ingredients = ingredients)
+            val parsed = recipeApi.parseIngredients(request)
+            Logger.i("RecipeRepository", "Successfully parsed ${parsed.size} ingredients")
+            parsed
+        } catch (e: Exception) {
+            Logger.e("RecipeRepository", "Error parsing ingredients: ${e.message}", e)
             throw e
         }
     }

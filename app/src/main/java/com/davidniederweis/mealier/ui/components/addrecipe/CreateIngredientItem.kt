@@ -81,6 +81,16 @@ fun CreateIngredientItem(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
+
+        // Original Text (if present)
+        if (ingredient.originalText.isNotBlank()) {
+            OutlinedTextField(
+                value = ingredient.originalText,
+                onValueChange = { onIngredientChange(ingredient.copy(originalText = it)) },
+                label = { Text("Original Text") },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 
     // Create Unit Dialog

@@ -19,6 +19,12 @@ fun AddIngredientSection(
 ) {
     val units by viewModel.units.collectAsState()
     val foods by viewModel.foods.collectAsState()
+    val isParsing by viewModel.isParsing.collectAsState()
+    val resolutionQueue by viewModel.resolutionQueue.collectAsState()
+
+    val hasUnparsedIngredients = remember(ingredients) {
+        ingredients.any { it.food == null && it.originalText.isNotBlank() }
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth()
@@ -37,8 +43,21 @@ fun AddIngredientSection(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                IconButton(onClick = { viewModel.addIngredient() }) {
-                    Icon(Icons.Default.Add, contentDescription = "Add ingredient")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (isParsing) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    } else if (hasUnparsedIngredients) {
+                        TextButton(onClick = { viewModel.parseIngredients() }) {
+                            Text("Parse")
+                        }
+                    }
+                    IconButton(onClick = { viewModel.addIngredient() }) {
+                        Icon(Icons.Default.Add, contentDescription = "Add ingredient")
+                    }
                 }
             }
 
@@ -74,5 +93,30 @@ fun AddIngredientSection(
                 }
             }
         }
+    }
+
+    // Resolution Dialog
+    if (resolutionQueue.isNotEmpty()) {
+        val resolution = resolutionQueue.first()
+        ResolveIngredientDialog(
+            resolution = resolution,
+            units = units,
+            foods = foods,
+            onResolve = { accepted ->
+                viewModel.resolveIngredient(resolution, accepted)
+            },
+            onDiscard = {
+                viewModel.discardResolution()
+            },
+            onCancel = {
+                viewModel.cancelParsing()
+            },
+            onCreateUnit = { name ->
+                viewModel.createUnit(name) { /* Unit created, will be available in dropdown */ }
+            },
+            onCreateFood = { name ->
+                viewModel.createFood(name) { /* Food created, will be available in dropdown */ }
+            }
+        )
     }
 }

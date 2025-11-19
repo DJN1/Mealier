@@ -19,6 +19,8 @@ interface RecipeFormViewModel {
     val imageUrl: StateFlow<String>
     val units: StateFlow<List<RecipeUnit>>
     val foods: StateFlow<List<Food>>
+    val isParsing: StateFlow<Boolean>
+    val resolutionQueue: StateFlow<List<IngredientResolution>>
 
     fun updateRecipeName(name: String)
     fun updateRecipeDescription(description: String)
@@ -37,4 +39,8 @@ interface RecipeFormViewModel {
     fun setImageUrl(url: String)
     fun createUnit(name: String, onSuccess: (RecipeUnit) -> Unit)
     fun createFood(name: String, onSuccess: (Food) -> Unit)
+    fun parseIngredients()
+    fun cancelParsing()
+    fun resolveIngredient(resolution: IngredientResolution, acceptedIngredient: IngredientInput)
+    fun discardResolution()
 }

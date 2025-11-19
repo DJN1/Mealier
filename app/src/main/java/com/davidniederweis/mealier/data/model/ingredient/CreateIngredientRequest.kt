@@ -1,20 +1,25 @@
 package com.davidniederweis.mealier.data.model.ingredient
 
-import com.google.gson.annotations.SerializedName
+import androidx.annotation.Keep
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 
+@Keep
 @Serializable
 data class CreateIngredientRequest(
-    @SerializedName("quantity")
+    @SerialName("quantity")
     val quantity: Double? = null,
 
-    @SerializedName("unit")
+    @SerialName("unit")
     val unit: CreateIngredientUnitRequest? = null,
 
-    @SerializedName("food")
+    @SerialName("food")
     val food: CreateIngredientFoodRequest,
 
-    @SerializedName("note")
-    val note: String? = null
+    @SerialName("note")
+    val note: String? = null,
+
+    @SerialName("originalText")
+    val originalText: String? = null
 )

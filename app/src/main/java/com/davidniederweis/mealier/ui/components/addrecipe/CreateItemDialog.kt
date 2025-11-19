@@ -10,10 +10,11 @@ import androidx.compose.ui.unit.dp
 fun CreateItemDialog(
     title: String,
     label: String,
+    initialValue: String = "",
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf(initialValue) }
 
     AlertDialog(
         onDismissRequest = onDismiss,

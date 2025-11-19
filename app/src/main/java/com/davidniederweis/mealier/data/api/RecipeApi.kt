@@ -16,7 +16,10 @@ import com.davidniederweis.mealier.data.model.tool.ToolListResponse
 import com.davidniederweis.mealier.data.model.unit.CreateUnitRequest
 import com.davidniederweis.mealier.data.model.unit.RecipeUnit
 import com.davidniederweis.mealier.data.model.unit.UnitListResponse
+import com.davidniederweis.mealier.data.model.parser.IngredientsRequest
+import com.davidniederweis.mealier.data.model.parser.ParsedIngredient
 import com.davidniederweis.mealier.data.model.CreateCookBook
+
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -167,4 +170,8 @@ interface RecipeApi {
 
     @PUT("api/households/cookbooks/{id}")
     suspend fun updateCookbook(@Path("id") id: String, @Body cookbook: UpdateCookbook): ResponseBody
+
+    // Parse ingredients
+    @POST("api/parser/ingredients")
+    suspend fun parseIngredients(@Body request: IngredientsRequest): List<ParsedIngredient>
 }
