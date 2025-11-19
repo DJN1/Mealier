@@ -347,6 +347,7 @@ fun FilterField(
                         )
                     }
                 } else {
+                    @Suppress("UNCHECKED_CAST")
                     SearchableDropdown(
                         label = "Value",
                         options = valueOptions as List<Pair<String, String>>,

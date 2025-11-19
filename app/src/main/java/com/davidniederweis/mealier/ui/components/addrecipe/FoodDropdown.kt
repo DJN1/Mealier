@@ -46,7 +46,7 @@ fun FoodDropdown(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .menuAnchor(),
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true),
             singleLine = true
         )
 

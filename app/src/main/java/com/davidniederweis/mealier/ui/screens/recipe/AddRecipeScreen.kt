@@ -6,7 +6,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.imePadding
 import com.davidniederweis.mealier.ui.components.addrecipe.ImportUrlForm
 import com.davidniederweis.mealier.ui.components.addrecipe.ManualRecipeForm
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
@@ -59,7 +58,7 @@ fun AddRecipeScreen(
                 .imePadding()
         ) {
             // Tabs
-            TabRow(selectedTabIndex = selectedTabIndex) {
+            PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTabIndex == index,
