@@ -15,8 +15,16 @@ import com.davidniederweis.mealier.data.repository.UserRepository
 import com.davidniederweis.mealier.data.repository.UserRepositoryImpl
 import com.davidniederweis.mealier.data.security.SecureDataStoreManager
 import com.davidniederweis.mealier.ui.viewmodel.ViewModelFactory
+import timber.log.Timber
 
 class MealierApplication : Application() {
+
+    override fun onCreate() {
+        super.onCreate()
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
+    }
 
     // Initialize dependencies
     private val secureDataStore by lazy { SecureDataStoreManager(this) }

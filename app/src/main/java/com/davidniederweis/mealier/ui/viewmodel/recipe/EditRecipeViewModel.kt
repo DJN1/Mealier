@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 
+import java.util.UUID
+
 class EditRecipeViewModel(
     private val repository: RecipeRepository
 ) : ViewModel(), RecipeFormViewModel {
@@ -143,7 +145,8 @@ class EditRecipeViewModel(
                             food = ingredient.food?.let { food ->
                                 foods.find { it.id == food.id }
                             },
-                            note = ingredient.note ?: ""
+                            note = ingredient.note ?: "",
+                            referenceId = ingredient.referenceId
                         )
                     }
                 } else {
@@ -327,13 +330,32 @@ class EditRecipeViewModel(
                             RecipeIngredient(
                                 title = null,
                                 note = input.note.takeIf { it.isNotBlank() },
-                                unit = input.unit?.let { RecipeIngredientUnit(id = it.id, name = it.name) },
-                                food = RecipeIngredientFood(id = input.food.id, name = input.food.name),
+                                unit = input.unit?.let { unit ->
+                                    RecipeIngredientUnit(
+                                        id = unit.id,
+                                        name = unit.name,
+                                        description = unit.description ?: "",
+                                        pluralName = unit.pluralName,
+                                        abbreviation = unit.abbreviation ?: "",
+                                        pluralAbbreviation = unit.pluralAbbreviation,
+                                        fraction = unit.fraction ?: false,
+                                        useAbbreviation = unit.useAbbreviation ?: false,
+                                        aliases = emptyList()
+                                    )
+                                },
+                                food = RecipeIngredientFood(
+                                    id = input.food.id,
+                                    name = input.food.name,
+                                    description = input.food.description ?: "",
+                                    pluralName = input.food.pluralName,
+                                    aliases = emptyList(),
+                                    householdsWithIngredientFood = emptyList()
+                                ),
                                 disableAmount = false,
                                 quantity = input.quantity.toDoubleOrNull() ?: 0.0,
                                 display = "${input.quantity} ${input.unit?.name ?: ""} ${input.food.name}",
                                 originalText = "",
-                                referenceId = ""
+                                referenceId = input.referenceId ?: UUID.randomUUID().toString().replace("-", "")
                             )
                         } else {
                             null
@@ -342,7 +364,7 @@ class EditRecipeViewModel(
                     recipeInstructions = _instructions.value.mapNotNull { input ->
                         if (input.text.isNotBlank()) {
                             RecipeInstruction(
-                                id = "", // This will be ignored by the API on update, but is required by the data class
+                                id = null,
                                 title = input.title.takeIf { it.isNotBlank() } ?: "",
                                 text = input.text,
                                 summary = null,

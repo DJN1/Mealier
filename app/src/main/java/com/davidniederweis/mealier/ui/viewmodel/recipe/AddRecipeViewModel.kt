@@ -335,7 +335,8 @@ data class IngredientInput(
     val quantity: String = "",
     val unit: RecipeUnit? = null,
     val food: Food? = null,
-    val note: String = ""
+    val note: String = "",
+    val referenceId: String? = null
 )
 
 data class InstructionInput(
