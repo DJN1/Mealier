@@ -20,6 +20,7 @@ import com.davidniederweis.mealier.ui.components.profile.SettingRow
 import com.davidniederweis.mealier.ui.navigation.Screen
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.BiometricsViewModel
+import com.davidniederweis.mealier.ui.viewmodel.preferences.SettingsViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.ThemeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.profile.ProfileState
 import com.davidniederweis.mealier.ui.viewmodel.profile.ProfileViewModel
@@ -32,11 +33,13 @@ fun ProfileScreen(
     isAdmin: Boolean,
     profileViewModel: ProfileViewModel = appViewModel(),
     themeViewModel: ThemeViewModel = appViewModel(),
-    biometricsViewModel: BiometricsViewModel = appViewModel()
+    biometricsViewModel: BiometricsViewModel = appViewModel(),
+    settingsViewModel: SettingsViewModel = appViewModel()
 ) {
     val profileState by profileViewModel.profileState.collectAsState()
     val isDarkMode by themeViewModel.isDarkMode.collectAsState()
     val biometricEnabled by biometricsViewModel.biometricEnabled.collectAsState()
+    val keepScreenOn by settingsViewModel.keepScreenOn.collectAsState()
 
     LaunchedEffect(Unit) {
         profileViewModel.loadProfile()
@@ -168,6 +171,19 @@ fun ProfileScreen(
                                 checked = biometricEnabled,
                                 onCheckedChange = { enabled ->
                                     biometricsViewModel.setBiometricEnabled(enabled)
+                                }
+                            )
+
+                            HorizontalDivider()
+
+                            // Keep Screen On Toggle
+                            SettingRow(
+                                icon = Icons.Default.Visibility,
+                                title = "Keep Screen On",
+                                description = "Keep screen awake on recipe detail",
+                                checked = keepScreenOn,
+                                onCheckedChange = { enabled ->
+                                    settingsViewModel.setKeepScreenOn(enabled)
                                 }
                             )
                         }

@@ -1,6 +1,10 @@
 package com.davidniederweis.mealier.ui.screens.recipe
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
+import android.view.WindowManager
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -29,6 +33,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.davidniederweis.mealier.BuildConfig
@@ -47,6 +53,7 @@ import com.davidniederweis.mealier.ui.components.layout.BottomNavBar
 import com.davidniederweis.mealier.ui.components.recipe.RecipeDetailContent
 import com.davidniederweis.mealier.ui.navigation.Screen
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
+import com.davidniederweis.mealier.ui.viewmodel.preferences.SettingsViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeDetailState
 import com.davidniederweis.mealier.ui.viewmodel.recipe.RecipeViewModel
 
@@ -57,18 +64,31 @@ fun RecipeDetailScreen(
     onNavigateBack: () -> Unit,
     navController: NavController,
     isAdmin: Boolean,
-    viewModel: RecipeViewModel = appViewModel()
+    viewModel: RecipeViewModel = appViewModel(),
+    settingsViewModel: SettingsViewModel = appViewModel()
 ) {
     val recipeDetailState by viewModel.recipeDetailState.collectAsState()
     val baseUrl by viewModel.baseUrl.collectAsState()
     val favoriteState by viewModel.favoriteState.collectAsState()
     val favoriteInProgress by viewModel.favoriteInProgress.collectAsState()
+    val keepScreenOn by settingsViewModel.keepScreenOn.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf(false) }
     var deleteError by remember { mutableStateOf<String?>(null) }
     var showEditTagsSheet by remember { mutableStateOf(false) }
     var showEditCategoriesSheet by remember { mutableStateOf(false) }
+
+    // Handle Keep Screen On
+    DisposableEffect(keepScreenOn) {
+        val activity = context.findActivity()
+        if (keepScreenOn) {
+            activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose {
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
 
     LaunchedEffect(slug) {
         viewModel.loadRecipeDetail(slug)
@@ -302,4 +322,10 @@ fun RecipeDetailScreen(
             )
         }
     }
+}
+
+private fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

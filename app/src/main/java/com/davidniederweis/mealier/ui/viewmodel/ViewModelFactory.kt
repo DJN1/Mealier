@@ -3,6 +3,7 @@ package com.davidniederweis.mealier.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.davidniederweis.mealier.data.api.UserApi
+import com.davidniederweis.mealier.data.preferences.AppPreferences
 import com.davidniederweis.mealier.data.preferences.BiometricsPreferences
 import com.davidniederweis.mealier.data.preferences.ServerPreferences
 import com.davidniederweis.mealier.data.preferences.ThemePreferences
@@ -22,6 +23,7 @@ import com.davidniederweis.mealier.ui.viewmodel.admin.UserManagementViewModel
 import com.davidniederweis.mealier.ui.viewmodel.auth.AuthViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.BiometricsViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.ServerViewModel
+import com.davidniederweis.mealier.ui.viewmodel.preferences.SettingsViewModel
 import com.davidniederweis.mealier.ui.viewmodel.preferences.ThemeViewModel
 import com.davidniederweis.mealier.ui.viewmodel.profile.ProfileViewModel
 import com.davidniederweis.mealier.ui.viewmodel.recipe.AddRecipeViewModel
@@ -39,6 +41,7 @@ class ViewModelFactory(
     private val themePreferences: ThemePreferences,
     private val biometricsPreferences: BiometricsPreferences,
     private val serverPreferences: ServerPreferences,
+    private val appPreferences: AppPreferences,
     private val importRecipeFromUrlUseCase: ImportRecipeFromUrlUseCase
 ) : ViewModelProvider.Factory {
 
@@ -75,6 +78,10 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(ServerViewModel::class.java) -> {
                 ServerViewModel(serverPreferences) as T
+            }
+
+            modelClass.isAssignableFrom(SettingsViewModel::class.java) -> {
+                SettingsViewModel(appPreferences) as T
             }
 
             modelClass.isAssignableFrom(FoodManagementViewModel::class.java) -> {

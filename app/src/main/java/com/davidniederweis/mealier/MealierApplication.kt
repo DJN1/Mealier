@@ -2,6 +2,7 @@ package com.davidniederweis.mealier
 
 import android.app.Application
 import com.davidniederweis.mealier.data.api.ApiClient
+import com.davidniederweis.mealier.data.preferences.AppPreferences
 import com.davidniederweis.mealier.data.preferences.BiometricsPreferences
 import com.davidniederweis.mealier.data.preferences.ServerPreferences
 import com.davidniederweis.mealier.data.preferences.ThemePreferences
@@ -31,6 +32,7 @@ class MealierApplication : Application() {
     private val themePreferences by lazy { ThemePreferences(this) }
     private val biometricsPreferences by lazy { BiometricsPreferences(this) }
     private val serverPreferences by lazy { ServerPreferences(this) }
+    private val appPreferences by lazy { AppPreferences(this) }
     private val apiClient by lazy { ApiClient(secureDataStore, serverPreferences) }
     private val authRepository by lazy {
         AuthRepository(apiClient.authApi, secureDataStore)
@@ -52,6 +54,7 @@ class MealierApplication : Application() {
             themePreferences = themePreferences,
             biometricsPreferences = biometricsPreferences,
             serverPreferences = serverPreferences,
+            appPreferences = appPreferences,
             importRecipeFromUrlUseCase = importRecipeFromUrlUseCase
         )
     }
