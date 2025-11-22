@@ -79,7 +79,7 @@ fun RecipeDetailContent(
 
     // Check if recipe has parsed ingredients (can be scaled)
     val hasParsedIngredients = remember(recipe) {
-        recipe.recipeIngredient.any { it.unit != null && it.food != null }
+        recipe.recipeIngredient.any { !it.disableAmount && it.quantity > 0.0 }
     }
 
     val nutritionItems = remember(recipe.nutrition) {
@@ -259,12 +259,6 @@ private fun RecipeImage(recipe: RecipeDetail, baseUrl: String) {
 @Composable
 private fun RecipeHeader(recipe: RecipeDetail) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text(
-            text = recipe.name ?: "Untitled Recipe",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
-
         recipe.description?.let { description ->
             Text(
                 text = description,

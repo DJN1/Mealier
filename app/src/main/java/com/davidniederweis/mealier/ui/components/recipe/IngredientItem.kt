@@ -93,12 +93,8 @@ private fun formatIngredientAnnotated(
 
         // Add quantity if not disabled and > 0
         if (!ingredient.disableAmount && ingredient.quantity > 0.0) {
-            // Scale quantity if ingredient has unit and food (parsed ingredient)
-            val scaledQuantity = if (ingredient.unit != null && ingredient.food != null) {
-                ingredient.quantity * servingsMultiplier
-            } else {
-                ingredient.quantity
-            }
+            // Scale quantity if ingredient has parsed quantity
+            val scaledQuantity = ingredient.quantity * servingsMultiplier
             
             val quantityInt = scaledQuantity.toInt()
 

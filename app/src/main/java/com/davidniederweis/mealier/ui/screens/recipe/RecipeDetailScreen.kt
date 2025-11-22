@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.davidniederweis.mealier.BuildConfig
@@ -120,9 +121,15 @@ fun RecipeDetailScreen(
                 title = {
                     when (val state = recipeDetailState) {
                         is RecipeDetailState.Success -> {
-                            Text(state.recipe.name ?: "Recipe")
+                            Text(
+                                text = state.recipe.name ?: "Recipe",
+                                fontWeight = FontWeight.Bold
+                            )
                         }
-                        else -> Text("Recipe")
+                        else -> Text(
+                            text = "Recipe",
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 },
                 navigationIcon = {

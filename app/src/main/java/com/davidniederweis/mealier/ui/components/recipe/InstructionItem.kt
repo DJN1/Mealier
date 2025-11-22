@@ -66,42 +66,24 @@ fun InstructionItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = if (isCompleted) {
-                        MaterialTheme.colorScheme.surfaceTint.copy(alpha = 0.25f)
-                    } else {
-                        MaterialTheme.colorScheme.primaryContainer
-                    }
-                ) {
-                    Text(
-                        text = "Step $stepNumber",
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
-                            .sizeIn(minHeight = 16.dp),
-                        fontWeight = FontWeight.SemiBold,
-                        color = if (isCompleted) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        }
-                    )
+                val headerText = when {
+                    hasTitle -> "$stepNumber. $title"
+                    hasSummary -> "$stepNumber. $summary"
+                    else -> "Step $stepNumber"
                 }
 
-                if (hasTitle) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        textDecoration = if (isCompleted) TextDecoration.LineThrough else null,
-                        color = if (isCompleted) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
-                    )
-                }
+                Text(
+                    text = headerText,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.weight(1f),
+                    fontWeight = FontWeight.ExtraBold,
+                    textDecoration = if (isCompleted) TextDecoration.LineThrough else null,
+                    color = if (isCompleted) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
+                )
             }
 
             val bodyColor = if (isCompleted) {
@@ -112,34 +94,13 @@ fun InstructionItem(
 
             val bodyDecoration = if (isCompleted) TextDecoration.LineThrough else null
 
-            when {
-                hasText -> {
-                    Text(
-                        text = text!!,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = bodyColor,
-                        textDecoration = bodyDecoration
-                    )
-                }
-
-                hasSummary -> {
-                    Text(
-                        text = summary!!,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = bodyColor,
-                        textDecoration = bodyDecoration,
-                        fontStyle = FontStyle.Italic
-                    )
-                }
-
-                hasTitle -> {
-                    Text(
-                        text = title!!,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = bodyColor,
-                        textDecoration = bodyDecoration
-                    )
-                }
+            if (hasText) {
+                Text(
+                    text = text!!,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = bodyColor,
+                    textDecoration = bodyDecoration
+                )
             }
         }
     }
