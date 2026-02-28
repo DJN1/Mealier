@@ -81,8 +81,15 @@ class AddRecipeViewModel(
     private val _resolutionQueue = MutableStateFlow<List<IngredientResolution>>(emptyList())
     override val resolutionQueue: StateFlow<List<IngredientResolution>> = _resolutionQueue.asStateFlow()
 
+    private val _loadError = MutableStateFlow<String?>(null)
+    val loadError: StateFlow<String?> = _loadError.asStateFlow()
+
     init {
         loadUnitsAndFoods()
+    }
+
+    fun clearLoadError() {
+        _loadError.value = null
     }
 
     // Load units and foods on init
@@ -99,6 +106,7 @@ class AddRecipeViewModel(
                 Logger.i("AddRecipeViewModel", "Loaded ${unitsResult.size} units and ${foodsResult.size} foods")
             } catch (e: Exception) {
                 Logger.e("AddRecipeViewModel", "Error loading units and foods: ${e.message}", e)
+                _loadError.value = "Failed to load ingredients data. Unit and food options may be unavailable."
             }
         }
     }
