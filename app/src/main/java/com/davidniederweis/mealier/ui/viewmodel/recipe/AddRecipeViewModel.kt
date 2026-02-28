@@ -375,15 +375,25 @@ class AddRecipeViewModel(
                 val recipe = repository.createRecipe(request)
                 Logger.i("AddRecipeViewModel", "Successfully created recipe: ${recipe.name}")
 
-                // Upload image if provided
-                if (_imageFile.value != null) {
-                    try {
-                        Logger.d("AddRecipeViewModel", "Uploading image for recipe: ${recipe.slug}")
-                        repository.uploadRecipeImage(recipe.slug, _imageFile.value!!)
-                        Logger.i("AddRecipeViewModel", "Successfully uploaded image")
-                    } catch (e: Exception) {
-                        Logger.w("AddRecipeViewModel", "Failed to upload image: ${e.message}", e)
-                        // Don't fail the whole operation if image upload fails
+                // Upload image if provided (file takes priority over URL)
+                when {
+                    _imageFile.value != null -> {
+                        try {
+                            Logger.d("AddRecipeViewModel", "Uploading image file for recipe: ${recipe.slug}")
+                            repository.uploadRecipeImage(recipe.slug, _imageFile.value!!)
+                            Logger.i("AddRecipeViewModel", "Successfully uploaded image file")
+                        } catch (e: Exception) {
+                            Logger.w("AddRecipeViewModel", "Failed to upload image file: ${e.message}", e)
+                        }
+                    }
+                    _imageUrl.value.isNotBlank() -> {
+                        try {
+                            Logger.d("AddRecipeViewModel", "Uploading image from URL for recipe: ${recipe.slug}")
+                            repository.uploadRecipeImageFromUrl(recipe.slug, _imageUrl.value)
+                            Logger.i("AddRecipeViewModel", "Successfully uploaded image from URL")
+                        } catch (e: Exception) {
+                            Logger.w("AddRecipeViewModel", "Failed to upload image from URL: ${e.message}", e)
+                        }
                     }
                 }
 
