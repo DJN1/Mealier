@@ -38,13 +38,27 @@ data class InstructionInput(
 data class NutritionInput(
     val calories: String = "",
     val fatContent: String = "",
+    val saturatedFatContent: String = "",
+    val unsaturatedFatContent: String = "",
+    val transFatContent: String = "",
     val proteinContent: String = "",
-    val carbohydrateContent: String = ""
+    val carbohydrateContent: String = "",
+    val fiberContent: String = "",
+    val sugarContent: String = "",
+    val cholesterolContent: String = "",
+    val sodiumContent: String = ""
 ) {
     fun hasAnyValue(): Boolean {
         return calories.isNotBlank() ||
                 fatContent.isNotBlank() ||
+                saturatedFatContent.isNotBlank() ||
+                unsaturatedFatContent.isNotBlank() ||
+                transFatContent.isNotBlank() ||
                 proteinContent.isNotBlank() ||
-                carbohydrateContent.isNotBlank()
+                carbohydrateContent.isNotBlank() ||
+                fiberContent.isNotBlank() ||
+                sugarContent.isNotBlank() ||
+                cholesterolContent.isNotBlank() ||
+                sodiumContent.isNotBlank()
     }
 }

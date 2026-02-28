@@ -36,7 +36,7 @@ fun NutritionDialog(
                 OutlinedTextField(
                     value = localNutrition.calories,
                     onValueChange = { localNutrition = localNutrition.copy(calories = it) },
-                    label = { Text("Calories") },
+                    label = { Text("Calories (kcal)") },
                     placeholder = { Text("200") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
@@ -47,6 +47,30 @@ fun NutritionDialog(
                     onValueChange = { localNutrition = localNutrition.copy(fatContent = it) },
                     label = { Text("Fat (g)") },
                     placeholder = { Text("10") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = localNutrition.saturatedFatContent,
+                    onValueChange = { localNutrition = localNutrition.copy(saturatedFatContent = it) },
+                    label = { Text("Saturated Fat (g)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = localNutrition.unsaturatedFatContent,
+                    onValueChange = { localNutrition = localNutrition.copy(unsaturatedFatContent = it) },
+                    label = { Text("Unsaturated Fat (g)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = localNutrition.transFatContent,
+                    onValueChange = { localNutrition = localNutrition.copy(transFatContent = it) },
+                    label = { Text("Trans Fat (g)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -65,6 +89,38 @@ fun NutritionDialog(
                     onValueChange = { localNutrition = localNutrition.copy(carbohydrateContent = it) },
                     label = { Text("Carbohydrates (g)") },
                     placeholder = { Text("30") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = localNutrition.fiberContent,
+                    onValueChange = { localNutrition = localNutrition.copy(fiberContent = it) },
+                    label = { Text("Fiber (g)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = localNutrition.sugarContent,
+                    onValueChange = { localNutrition = localNutrition.copy(sugarContent = it) },
+                    label = { Text("Sugar (g)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = localNutrition.cholesterolContent,
+                    onValueChange = { localNutrition = localNutrition.copy(cholesterolContent = it) },
+                    label = { Text("Cholesterol (mg)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                OutlinedTextField(
+                    value = localNutrition.sodiumContent,
+                    onValueChange = { localNutrition = localNutrition.copy(sodiumContent = it) },
+                    label = { Text("Sodium (mg)") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )

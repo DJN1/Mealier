@@ -355,8 +355,15 @@ class AddRecipeViewModel(
                     CreateNutritionRequest(
                         calories = _nutrition.value.calories.takeIf { it.isNotBlank() },
                         fatContent = _nutrition.value.fatContent.takeIf { it.isNotBlank() },
+                        saturatedFatContent = _nutrition.value.saturatedFatContent.takeIf { it.isNotBlank() },
+                        unsaturatedFatContent = _nutrition.value.unsaturatedFatContent.takeIf { it.isNotBlank() },
+                        transFatContent = _nutrition.value.transFatContent.takeIf { it.isNotBlank() },
                         proteinContent = _nutrition.value.proteinContent.takeIf { it.isNotBlank() },
-                        carbohydrateContent = _nutrition.value.carbohydrateContent.takeIf { it.isNotBlank() }
+                        carbohydrateContent = _nutrition.value.carbohydrateContent.takeIf { it.isNotBlank() },
+                        fiberContent = _nutrition.value.fiberContent.takeIf { it.isNotBlank() },
+                        sugarContent = _nutrition.value.sugarContent.takeIf { it.isNotBlank() },
+                        cholesterolContent = _nutrition.value.cholesterolContent.takeIf { it.isNotBlank() },
+                        sodiumContent = _nutrition.value.sodiumContent.takeIf { it.isNotBlank() }
                     )
                 } else null
 
