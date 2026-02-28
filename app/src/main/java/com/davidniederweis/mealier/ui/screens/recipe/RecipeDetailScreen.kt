@@ -217,7 +217,11 @@ fun RecipeDetailScreen(
     ) { paddingValues ->
         when (val state = recipeDetailState) {
             is RecipeDetailState.Loading -> {
-                LoadingBox(modifier = Modifier.fillMaxSize())
+                LoadingBox(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
             }
 
             is RecipeDetailState.Success -> {
@@ -243,7 +247,11 @@ fun RecipeDetailScreen(
             }
 
             is RecipeDetailState.Idle -> {
-                LoadingBox(modifier = Modifier.fillMaxSize())
+                LoadingBox(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
             }
         }
     }
