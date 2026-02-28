@@ -62,13 +62,17 @@ fun RecipeDetailContent(
     onEditCategoriesClick: () -> Unit,
     onEditTagsClick: () -> Unit,
 ) {
-    // Track gathered ingredients by their index
-    val gatheredIngredients = remember { mutableStateSetOf<Int>() }
-    // Track completed instructions by their index
-    val completedInstructions = remember { mutableStateSetOf<Int>() }
+    // Track gathered ingredients by their index. Keyed to recipe.id so the set
+    // resets if the user navigates to a different recipe or the recipe is reloaded.
+    val gatheredIngredients = remember(recipe.id) { mutableStateSetOf<Int>() }
+    // Track completed instructions by their index.
+    val completedInstructions = remember(recipe.id) { mutableStateSetOf<Int>() }
 
-    // Track current servings count for scaling ingredients
-    var currentServings by remember { mutableDoubleStateOf(recipe.recipeServings) }
+    // Track current servings count for scaling ingredients. Keyed to recipeServings
+    // so the value resets correctly if the recipe is updated with a different serving size.
+    var currentServings by remember(recipe.id, recipe.recipeServings) {
+        mutableDoubleStateOf(recipe.recipeServings)
+    }
 
     // Calculate servings multiplier from current servings
     val servingsMultiplier = if (recipe.recipeServings > 0) {
