@@ -6,6 +6,7 @@ import com.davidniederweis.mealier.data.security.SecureDataStoreManager
 import com.davidniederweis.mealier.util.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import retrofit2.HttpException
 
 class AuthRepository(
     private val authApi: AuthApi,
@@ -63,21 +64,18 @@ class AuthRepository(
             Logger.i("AuthRepository", "User fetched successfully: ${user.username}")
 
             emit(Result.Success(user))
-        } catch (e: Exception) {
-            Logger.e("AuthRepository", "Get current user error", e)
-            
-            // Check if this is an authentication error (401)
-            // This happens when token refresh also failed
-            val is401 = e.message?.contains("401") == true || 
-                        e.message?.contains("Unauthorized") == true
-            
-            if (is401) {
+        } catch (e: HttpException) {
+            Logger.e("AuthRepository", "HTTP ${e.code()} error fetching current user", e)
+            if (e.code() == 401) {
                 Logger.w("AuthRepository", "Authentication failed, clearing token")
                 tokenManager.clearToken()
                 emit(Result.Error("Session expired. Please login again."))
             } else {
-                emit(Result.Error(e.message ?: "Failed to get user"))
+                emit(Result.Error("Server error ${e.code()}. Please try again."))
             }
+        } catch (e: Exception) {
+            Logger.e("AuthRepository", "Get current user error", e)
+            emit(Result.Error(e.message ?: "Failed to get user"))
         }
     }
 }
