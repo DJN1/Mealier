@@ -76,7 +76,9 @@ fun HomeScreen(
     val baseUrl by viewModel.baseUrl.collectAsState()
     val categories by viewModel.allCategories.collectAsState()
     val tags by viewModel.allTags.collectAsState()
+    val filterDataError by viewModel.filterDataError.collectAsState()
     val listState = rememberLazyGridState()
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
 
     var isRefreshing by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
@@ -89,6 +91,14 @@ fun HomeScreen(
     LaunchedEffect(recipeListState) {
         if (recipeListState !is RecipeListState.Loading) {
             isRefreshing = false
+        }
+    }
+
+    // Show Snackbar when filter data fails to load
+    LaunchedEffect(filterDataError) {
+        filterDataError?.let { error ->
+            snackbarHostState.showSnackbar(error)
+            viewModel.clearFilterDataError()
         }
     }
 
@@ -123,6 +133,7 @@ fun HomeScreen(
     }
 
     androidx.compose.material3.Scaffold(
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) },
         topBar = {
             Column(
                 modifier = Modifier

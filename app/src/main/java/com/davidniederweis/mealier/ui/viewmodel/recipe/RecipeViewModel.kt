@@ -42,6 +42,9 @@ class RecipeViewModel(
     private val _allTags = MutableStateFlow<List<Tag>>(emptyList())
     val allTags: StateFlow<List<Tag>> = _allTags.asStateFlow()
 
+    private val _filterDataError = MutableStateFlow<String?>(null)
+    val filterDataError: StateFlow<String?> = _filterDataError.asStateFlow()
+
     private val _favoriteState = MutableStateFlow<Boolean?>(null)
     val favoriteState: StateFlow<Boolean?> = _favoriteState.asStateFlow()
 
@@ -80,10 +83,15 @@ class RecipeViewModel(
             try {
                 _allCategories.value = repository.getCategories()
                 _allTags.value = repository.getTags()
-            } catch (_: Exception) {
-                // Handle error
+            } catch (e: Exception) {
+                Logger.w("RecipeViewModel", "Failed to load filter data: ${e.message}")
+                _filterDataError.value = "Failed to load filter options"
             }
         }
+    }
+
+    fun clearFilterDataError() {
+        _filterDataError.value = null
     }
 
     fun loadRecipes(

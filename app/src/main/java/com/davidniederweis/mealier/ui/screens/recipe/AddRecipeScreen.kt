@@ -21,8 +21,10 @@ fun AddRecipeScreen(
     viewModel: AddRecipeViewModel = appViewModel()
 ) {
     val creationState by viewModel.creationState.collectAsState()
+    val loadError by viewModel.loadError.collectAsState()
     var selectedTabIndex by remember { mutableIntStateOf(initialTab) }
     val tabs = listOf("Manual", "Import URL")
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Handle success state
     LaunchedEffect(creationState) {
@@ -32,7 +34,16 @@ fun AddRecipeScreen(
         }
     }
 
+    // Show Snackbar when units/foods fail to load
+    LaunchedEffect(loadError) {
+        loadError?.let { error ->
+            snackbarHostState.showSnackbar(error)
+            viewModel.clearLoadError()
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Add Recipe") },
