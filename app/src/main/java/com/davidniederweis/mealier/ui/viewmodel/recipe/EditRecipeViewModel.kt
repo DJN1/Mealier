@@ -87,28 +87,6 @@ class EditRecipeViewModel(
     private val _resolutionQueue = MutableStateFlow<List<IngredientResolution>>(emptyList())
     override val resolutionQueue: StateFlow<List<IngredientResolution>> = _resolutionQueue.asStateFlow()
 
-    init {
-        loadUnitsAndFoods()
-    }
-
-    // Load units and foods on init
-    private fun loadUnitsAndFoods() {
-        viewModelScope.launch {
-            try {
-                Logger.d("EditRecipeViewModel", "Loading units and foods")
-                val unitsResult = repository.getUnits()
-                val foodsResult = repository.getFoods()
-
-                _units.value = unitsResult.sortedBy { it.name }
-                _foods.value = foodsResult.sortedBy { it.name }
-
-                Logger.i("EditRecipeViewModel", "Loaded ${unitsResult.size} units and ${foodsResult.size} foods")
-            } catch (e: Exception) {
-                Logger.e("EditRecipeViewModel", "Error loading units and foods: ${e.message}", e)
-            }
-        }
-    }
-
     // Load existing recipe for editing
     fun loadRecipe(slug: String) {
         viewModelScope.launch {
