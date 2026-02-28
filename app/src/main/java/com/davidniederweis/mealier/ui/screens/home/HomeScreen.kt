@@ -233,13 +233,15 @@ fun HomeScreen(
             PullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = {
-                    isRefreshing = true
                     if (page == 0) {
+                        isRefreshing = true
                         viewModel.loadRecipes(refresh = true, categoryIds = selectedCategoryIds, tagIds = selectedTagIds)
                     } else {
-                        selectedCookbook?.let {
-                            viewModel.loadRecipesByCookbook(it.slug)
+                        selectedCookbook?.let { cookbook ->
+                            isRefreshing = true
+                            viewModel.loadRecipesByCookbook(cookbook.slug)
                         }
+                        // No cookbook selected: nothing to refresh, leave isRefreshing false
                     }
                 },
                 modifier = Modifier.fillMaxSize()
