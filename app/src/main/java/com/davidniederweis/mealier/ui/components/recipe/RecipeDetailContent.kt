@@ -625,7 +625,17 @@ private fun getServingsDisplay(recipe: RecipeDetail): String? {
         }
     }
 
-    // Rule 3: No data available
+    // Rule 3: Fall back to recipeServings
+    if (recipe.recipeServings > 0) {
+        val servingsInt = recipe.recipeServings.toInt()
+        return if (recipe.recipeServings == servingsInt.toDouble()) {
+            "$servingsInt Servings"
+        } else {
+            "${recipe.recipeServings} Servings"
+        }
+    }
+
+    // Rule 4: No data available
     return null
 }
 

@@ -97,7 +97,7 @@ fun RecipeDetailScreen(
 
     // Function to share recipe
     fun shareRecipe(recipeSlug: String, recipeName: String?) {
-        val recipeUrl = "${BuildConfig.BASE_URL}/recipe/$recipeSlug"
+        val recipeUrl = "${BuildConfig.BASE_URL}/g/home/r/$recipeSlug"
         val shareText = if (recipeName != null) {
             "Check out this recipe: $recipeName\n$recipeUrl"
         } else {
