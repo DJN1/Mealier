@@ -437,23 +437,25 @@ private fun RecipeIngredients(
 
                 HorizontalDivider()
 
-                recipe.recipeIngredient.forEachIndexed { index, ingredient ->
-                    if (!ingredient.title.isNullOrBlank()) {
-                        Text(
-                            text = ingredient.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                        )
-                    } else {
-                        val isGathered = gatheredIngredients.contains(index)
-                        IngredientItem(
-                            ingredient = ingredient,
-                            servingsMultiplier = servingsMultiplier,
-                            isGathered = isGathered,
-                            onToggle = { onToggleIngredient(index) }
-                        )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    recipe.recipeIngredient.forEachIndexed { index, ingredient ->
+                        if (!ingredient.title.isNullOrBlank()) {
+                            Text(
+                                text = ingredient.title,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                            )
+                        } else {
+                            val isGathered = gatheredIngredients.contains(index)
+                            IngredientItem(
+                                ingredient = ingredient,
+                                servingsMultiplier = servingsMultiplier,
+                                isGathered = isGathered,
+                                onToggle = { onToggleIngredient(index) }
+                            )
+                        }
                     }
                 }
             }
