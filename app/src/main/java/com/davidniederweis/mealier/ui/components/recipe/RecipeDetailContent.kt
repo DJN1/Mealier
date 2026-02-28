@@ -246,6 +246,7 @@ fun RecipeDetailTwoPane(
 
 @Composable
 private fun RecipeImage(recipe: RecipeDetail, baseUrl: String) {
+    if (recipe.image == null) return
     val imageUrl = "$baseUrl/api/media/recipes/${recipe.id}/images/original.webp" +
             if (recipe.updatedAt != null) "?v=${recipe.updatedAt}" else ""
     AsyncImage(
