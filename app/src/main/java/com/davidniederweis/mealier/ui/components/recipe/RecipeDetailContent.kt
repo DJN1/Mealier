@@ -602,34 +602,33 @@ private fun RecipeFooter(recipe: RecipeDetail) {
  * Returns null if no data is available.
  */
 private fun getServingsDisplay(recipe: RecipeDetail): String? {
-    // Rule 1: If servings is not null and greater than 0
-    val recipeYield = recipe.recipeYield
-    if (recipeYield != null) {
-        val servings = recipeYield.toDoubleOrNull()
-        if (servings != null && servings > 0.0) {
-            val servingsInt = servings.toInt()
-            return if (servings == servingsInt.toDouble()) {
-                "$servingsInt Servings"
-            } else {
-                "$servings Servings"
-            }
+    val yieldStr = recipe.recipeYield
+    val yieldQuantity = recipe.recipeYieldQuantity
+
+    // Rule 1: recipeYield is a plain positive number → "N Servings"
+    if (!yieldStr.isNullOrBlank()) {
+        val asNumber = yieldStr.toDoubleOrNull()
+        if (asNumber != null && asNumber > 0.0) {
+            val asInt = asNumber.toInt()
+            return if (asNumber == asInt.toDouble()) "$asInt Servings" else "$asNumber Servings"
         }
     }
 
-    // Rule 2: If servings is null or zero, check yield and yieldQuantity
-    val yieldAmount = recipe.recipeYieldQuantity
-    val yieldUnit = recipe.recipeYield
-
-    if (yieldAmount != null && yieldAmount > 0.0 && !yieldUnit.isNullOrBlank()) {
-        val yieldInt = yieldAmount.toInt()
-        return if (yieldAmount == yieldInt.toDouble()) {
-            "$yieldInt $yieldUnit"
-        } else {
-            "$yieldAmount $yieldUnit"
-        }
+    // Rule 2: Combine recipeYieldQuantity with recipeYield as a bare unit label
+    // (e.g. yieldStr="cookies", yieldQuantity=24 → "24 cookies").
+    // Guard: skip if yieldStr starts with a digit — that means it is already a full
+    // formatted string like "24 cookies" and combining would produce "24 24 cookies".
+    if (yieldQuantity != null && yieldQuantity > 0.0
+        && !yieldStr.isNullOrBlank() && !yieldStr.first().isDigit()
+    ) {
+        val qtyInt = yieldQuantity.toInt()
+        return if (yieldQuantity == qtyInt.toDouble()) "$qtyInt $yieldStr" else "$yieldQuantity $yieldStr"
     }
 
-    // Rule 3: Fall back to recipeServings
+    // Rule 3: recipeYield is a full display string (e.g. "24 cookies") → use verbatim
+    if (!yieldStr.isNullOrBlank()) return yieldStr
+
+    // Rule 4: Fall back to recipeServings
     if (recipe.recipeServings > 0) {
         val servingsInt = recipe.recipeServings.toInt()
         return if (recipe.recipeServings == servingsInt.toDouble()) {
@@ -639,7 +638,6 @@ private fun getServingsDisplay(recipe: RecipeDetail): String? {
         }
     }
 
-    // Rule 4: No data available
     return null
 }
 
