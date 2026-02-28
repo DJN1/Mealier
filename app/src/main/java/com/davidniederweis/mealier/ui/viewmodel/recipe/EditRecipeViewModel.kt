@@ -159,8 +159,15 @@ class EditRecipeViewModel(
                     _nutrition.value = NutritionInput(
                         calories = nutrition.calories ?: "",
                         fatContent = nutrition.fatContent ?: "",
+                        saturatedFatContent = nutrition.saturatedFatContent ?: "",
+                        unsaturatedFatContent = nutrition.unsaturatedFatContent ?: "",
+                        transFatContent = nutrition.transFatContent ?: "",
                         proteinContent = nutrition.proteinContent ?: "",
-                        carbohydrateContent = nutrition.carbohydrateContent ?: ""
+                        carbohydrateContent = nutrition.carbohydrateContent ?: "",
+                        fiberContent = nutrition.fiberContent ?: "",
+                        sugarContent = nutrition.sugarContent ?: "",
+                        cholesterolContent = nutrition.cholesterolContent ?: "",
+                        sodiumContent = nutrition.sodiumContent ?: ""
                     )
                 }
 
