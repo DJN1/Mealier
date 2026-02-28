@@ -18,6 +18,7 @@ import com.davidniederweis.mealier.ui.screens.recipe.EditRecipeScreen
 import com.davidniederweis.mealier.ui.screens.recipe.FavoriteRecipesScreen
 import com.davidniederweis.mealier.ui.screens.recipe.RecipeDetailScreen
 import com.davidniederweis.mealier.ui.viewmodel.appViewModel
+import com.davidniederweis.mealier.ui.viewmodel.auth.AuthViewModel
 import com.davidniederweis.mealier.ui.viewmodel.profile.ProfileState
 import com.davidniederweis.mealier.ui.viewmodel.profile.ProfileViewModel
 
@@ -29,6 +30,7 @@ fun NavGraph(
     // Get profile view model to check admin status
     val profileViewModel: ProfileViewModel = appViewModel()
     val profileState by profileViewModel.profileState.collectAsState()
+    val authViewModel: AuthViewModel = appViewModel()
 
     // Extract admin status from profile state
     val isAdmin = when (val state = profileState) {
@@ -142,6 +144,7 @@ fun NavGraph(
         composable(Screen.Profile.route) {
             ProfileScreen(
                 onLogout = {
+                    authViewModel.logout()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }

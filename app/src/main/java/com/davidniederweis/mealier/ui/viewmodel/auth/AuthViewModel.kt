@@ -76,6 +76,14 @@ class AuthViewModel(
         }
     }
 
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
+            _isLoggedIn.value = false
+            _authState.value = AuthState.Unauthenticated
+        }
+    }
+
     fun login(username: String, password: String, enableBiometric: Boolean = false) {
         viewModelScope.launch {
             authRepository.login(username, password).collect { result ->

@@ -175,6 +175,18 @@ class SecureDataStoreManager(private val context: Context) {
         }
     }
 
+    suspend fun clearCredentials() {
+        try {
+            context.dataStore.edit { prefs ->
+                prefs.remove(KEY_USERNAME)
+                prefs.remove(KEY_PASSWORD)
+            }
+            Logger.i("SecureDataStore", "Credentials cleared successfully")
+        } catch (e: Exception) {
+            Logger.e("SecureDataStore", "Failed to clear credentials", e)
+        }
+    }
+
     // Credentials Operations
     suspend fun saveCredentials(username: String, password: String) {
         try {
