@@ -39,6 +39,11 @@ class AuthRepository(
         return tokenManager.hasToken()
     }
 
+    suspend fun logout() {
+        tokenManager.clearToken()
+        tokenManager.clearCredentials()
+    }
+
     fun getCurrentUser(): Flow<Result<UserProfile>> = flow {
         emit(Result.Loading)
         try {
