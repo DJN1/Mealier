@@ -45,7 +45,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.davidniederweis.mealier.BuildConfig
 import com.davidniederweis.mealier.data.model.recipe.RecipeCategory
 import com.davidniederweis.mealier.data.model.recipe.RecipeTag
 import com.davidniederweis.mealier.ui.components.general.ErrorMessage
@@ -97,7 +96,7 @@ fun RecipeDetailScreen(
 
     // Function to share recipe
     fun shareRecipe(recipeSlug: String, recipeName: String?) {
-        val recipeUrl = "${BuildConfig.BASE_URL}/g/home/r/$recipeSlug"
+        val recipeUrl = "$baseUrl/g/home/r/$recipeSlug"
         val shareText = if (recipeName != null) {
             "Check out this recipe: $recipeName\n$recipeUrl"
         } else {
