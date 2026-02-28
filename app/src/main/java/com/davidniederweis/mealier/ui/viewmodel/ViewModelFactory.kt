@@ -116,10 +116,6 @@ class ViewModelFactory(
                 CreateCookbookViewModel(recipeRepository) as T
             }
 
-            modelClass.isAssignableFrom(EditRecipeViewModel::class.java) -> {
-                EditRecipeViewModel(recipeRepository) as T
-            }
-
             modelClass.isAssignableFrom(CookbookViewModel::class.java) -> {
                 CookbookViewModel(recipeRepository) as T
             }
