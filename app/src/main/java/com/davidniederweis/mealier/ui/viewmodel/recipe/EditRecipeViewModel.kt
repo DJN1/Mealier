@@ -112,7 +112,7 @@ class EditRecipeViewModel(
                 _recipeSlug.value = slug
                 _recipeName.value = recipe.name ?: ""
                 _recipeDescription.value = recipe.description ?: ""
-                _servings.value = recipe.recipeServings.toString()
+                _servings.value = recipe.recipeServings.takeIf { it > 0 }?.toString() ?: ""
                 _prepTime.value = recipe.prepTime ?: ""
                 _cookTime.value = recipe.cookTime ?: ""
                 _totalTime.value = recipe.totalTime ?: ""
